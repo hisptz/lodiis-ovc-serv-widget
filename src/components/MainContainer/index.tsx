@@ -11,7 +11,7 @@ export default function MainContainer() {
             <div className={`${classes['visualizationContainer']}`}>
                 {
                     Array.from(Array(10).keys()).map((index) => (
-                        <Visualization name={index}/>
+                        <Visualization key={`${index}-option`} name={index.toString()}/>
                     ))
                 }
             </div>
