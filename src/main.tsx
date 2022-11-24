@@ -1,10 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import './index.css'
+import './styles/index.css'
+import './styles/common.css'
 import {Provider,} from "@dhis2/app-runtime";
-import {login} from "./utils/login";
-    import {CssReset} from "@dhis2/ui";
+import {checkAuth, login} from "./utils/login";
+import {CssReset} from "@dhis2/ui";
 
 const root = document.getElementById('root') as HTMLElement;
 
@@ -68,7 +69,11 @@ const renderDevApp = async () => {
         apiVersion: serverVersion.minor
     }
 
-    await login(baseUrl, {username, password})
+    const isAuthenticated = await checkAuth(baseUrl);
+
+    if (!isAuthenticated) {
+        await login(baseUrl, {username, password})
+    }
 
     ReactDOM.createRoot(root).render(
         <React.StrictMode>
