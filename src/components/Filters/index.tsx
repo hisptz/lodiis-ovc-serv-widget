@@ -1,12 +1,13 @@
-import {DropdownButton, IconFilter24} from "@dhis2/ui"
+import classes from "./Filters.module.css"
+import PeriodSelector from "./components/PeriodSelector";
 
 export default function Filters() {
 
     return (
-        <div className="row">
-            <DropdownButton icon={<IconFilter24/>}>
-                Filter
-            </DropdownButton>
+        <div className={classes['container']}>
+            <div className={classes['periodContainer']}>
+                <PeriodSelector/>
+            </div>
         </div>
     )
 }

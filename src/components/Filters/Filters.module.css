@@ -1,0 +1,16 @@
+.container {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.periodContainer {
+    width: 50%;
+}
+
+
+@media screen and (max-width: 768px) {
+    .periodContainer {
+        width: 100%;
+    }
+}
