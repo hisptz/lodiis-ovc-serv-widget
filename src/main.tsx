@@ -9,7 +9,6 @@ import {CssReset} from "@dhis2/ui";
 
 const root = document.getElementById('root') as HTMLElement;
 
-
 const getServerVersion = async (baseUrl: string, authorization?: string) => {
     const appVersion = await fetch(`${baseUrl}/api/system/info.json`, {
         headers: authorization ? {
@@ -84,7 +83,6 @@ const renderDevApp = async () => {
         </React.StrictMode>
     )
 }
-
 
 if (import.meta.env.PROD) {
     renderProductionApp();
