@@ -119,7 +119,6 @@ function getOvcData(enrollmentData: EnrollmentData, teiData: TrackedEntityInstan
         return [attribute, value]
 
     })
-    console.log(pairs)
     const attributes = fromPairs(pairs);
     return {
         enrollment,

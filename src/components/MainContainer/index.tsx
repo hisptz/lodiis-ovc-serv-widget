@@ -7,10 +7,10 @@ import Error from "../Error"
 
 
 export function Visualizations() {
-    const {loading, error, data} = useData();
+    const {loading, error, data, progress} = useData();
 
 
-    console.log(data);
+    console.log(data, progress);
 
     if (loading) {
         return (

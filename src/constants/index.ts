@@ -11,7 +11,6 @@ export const ATTRIBUTES: Record<string, string | { attribute: string; getter: (v
     age: {
         attribute: "qZP982qpSPS",
         getter: (value?: string) => {
-            console.log(value)
             if (value) {
                 const dateOfBirth = DateTime.fromISO(value);
                 return dateOfBirth.diffNow().negate().shiftTo("years").years;

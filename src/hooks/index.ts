@@ -2,11 +2,13 @@ import {useRecoilValue} from "recoil";
 import {PeriodFilterState} from "../components/Filters/state";
 import {DISTRICT_LEVEL, PROGRAM, SERVICE_PROVISION_PROGRAM_STAGE} from "../constants";
 import {useDataEngine, useDataQuery} from "@dhis2/app-runtime";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Event} from "@hisptz/dhis2-utils";
 import {asyncify, mapLimit} from "async";
 import {getFilteredEnrollments, transformEvents} from "../utils/data";
 import {OvcServData} from "../interfaces";
+import {useQuery} from "react-query";
+import {flatten} from "lodash";
 
 const dataQuery = {
     events: {
@@ -20,7 +22,7 @@ const dataQuery = {
             programStage: SERVICE_PROVISION_PROGRAM_STAGE,
             totalPages: true,
             page,
-            pageSize: 10,
+            pageSize: 2,
             fields: [
                 `event`,
                 `enrollment`,
@@ -37,8 +39,7 @@ export function useData() {
     const period = useRecoilValue(PeriodFilterState);
     const engine = useDataEngine();
     const [progress, setProgress] = useState<number>(0);
-    const [rawData, setRawData] = useState<OvcServData[]>([]);
-    const {data, loading, error, refetch} = useDataQuery(dataQuery, {
+    const {refetch} = useDataQuery(dataQuery, {
         variables: {
             startDate: period?.start?.toFormat('yyyy-MM-dd'),
             endDate: period?.end?.toFormat('yyyy-MM-dd')
@@ -51,11 +52,10 @@ export function useData() {
         return data?.events as any;
     }
 
-    async function getData(page: number) {
+    async function getData(page: number): Promise<OvcServData[] | undefined> {
         if (!period) {
             return;
         }
-
         const data = await refetch({
             startDate: period?.start?.toFormat('yyyy-MM-dd'),
             endDate: period?.end?.toFormat('yyyy-MM-dd'),
@@ -63,53 +63,39 @@ export function useData() {
         });
         const pageEvents = data?.events as any;
         const events = pageEvents?.events as Event[];
-        const sanitizedData = await transformEvents(await getFilteredEnrollments(events, {
+        return await transformEvents(await getFilteredEnrollments(events, {
             engine,
             period
         }), engine);
-
-        console.log(sanitizedData)
-        setRawData((prevState: OvcServData[]) => {
-            return [...prevState, ...(sanitizedData ?? [])]
-        })
     }
-
 
     async function get() {
         if (!period) {
             return;
         }
-        const {pager: {pageCount, total}, events} = await getPagination() ?? {};
+        const {pager: {pageCount}, events} = await getPagination() ?? {};
         if (!pageCount) return;
         if (pageCount === 1) {
             const firstPageData = events as any;
-            setRawData(await transformEvents(await getFilteredEnrollments(firstPageData, {
+            setProgress(100);
+            return await transformEvents(await getFilteredEnrollments(firstPageData, {
                 engine,
                 period
-            }), engine));
-            setProgress(100);
-            console.log(rawData)
-            return;
+            }), engine);
         }
-        const done = await mapLimit(Array.from(Array(pageCount - 1).keys()), 1, asyncify(async (index: number) => getData(index + 1).then(() => setProgress((index + 1) / pageCount))));
-        console.log(rawData)
+        return flatten(await mapLimit(Array.from(Array(pageCount).keys()), 1, asyncify(async (index: number) => getData(index + 1).then((data) => {
+            setProgress(((index + 1) / pageCount) * 100);
+            return data;
+        }))));
     }
 
-    useEffect(() => {
-        if (period) {
-            get()
-        }
-        return () => {
-            abortController.abort();
-        }
-    }, [period]);
-
+    const {isLoading, data, error,} = useQuery([period], get)
 
     return {
-        loading,
+        loading: isLoading,
         progress,
         error,
-        data: rawData
+        data
     };
 
 }
