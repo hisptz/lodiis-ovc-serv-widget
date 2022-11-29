@@ -21,11 +21,6 @@ function eventHasAtLeastOneService(event: Event): boolean {
     return serviceValues.reduce((acc, value) => acc || value, false)
 }
 
-export function filterEventsByEnrollmentAndService(events: Event[], {period}: FilterOptions): Event[] {
-    //We need enrollment data to pull this one off
-    return [];
-}
-
 export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {period}: FilterOptions): boolean {
 
     const [firstQuarter] = period.interval.splitBy(Duration.fromObject({months: 3}));
@@ -36,7 +31,6 @@ export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {per
     })
     return !isEmpty(firstQuarterEvents) && !isEmpty(lastQuarterEvents)
 }
-
 
 const enrollmentQuery = {
     enrollment: {

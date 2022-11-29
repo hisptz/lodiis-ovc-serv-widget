@@ -10,17 +10,15 @@ export function Visualizations() {
     const {loading, error, data, progress} = useData();
 
 
-    console.log(data, progress);
-
     if (loading) {
         return (
-            <Loader/>
+            <Loader progress={progress} text={`Loading data, please wait...`}/>
         )
     }
 
     if (error) {
         return (
-            <Error error={error.message}/>
+            <Error error={error?.message}/>
         )
     }
 

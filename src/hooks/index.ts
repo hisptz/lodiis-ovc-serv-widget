@@ -73,6 +73,7 @@ export function useData() {
         if (!period) {
             return;
         }
+        setProgress(0);
         const {pager: {pageCount}, events} = await getPagination() ?? {};
         if (!pageCount) return;
         if (pageCount === 1) {
