@@ -4,15 +4,16 @@ import Visualization from "../Visualization";
 import {useData} from "../../hooks";
 import Loader from "../Loader";
 import Error from "../Error"
+import {VISUALIZATIONS} from "../../constants";
 
 
 export function Visualizations() {
-    const {loading, error, data, progress} = useData();
+    const {loading, error} = useData();
 
 
     if (loading) {
         return (
-            <Loader progress={progress} text={`Loading data, please wait...`}/>
+            <Loader text={`Loading data, please wait...`}/>
         )
     }
 
@@ -25,8 +26,8 @@ export function Visualizations() {
     return (
         <div className={`${classes['visualizationContainer']}`}>
             {
-                Array.from(Array(10).keys()).map((index) => (
-                    <Visualization key={`${index}-option`} name={index.toString()}/>
+                VISUALIZATIONS.map((config) => (
+                    <Visualization config={config} key={`${config.id}-container`}/>
                 ))
             }
         </div>

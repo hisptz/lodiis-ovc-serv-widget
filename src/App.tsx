@@ -1,11 +1,20 @@
 import MainContainer from "./components/MainContainer";
 import {DataStoreProvider} from "@dhis2/app-service-datastore"
 import Loader from "./components/Loader";
-import {RecoilRoot} from "recoil";
+import {MutableSnapshot, RecoilRoot} from "recoil";
+import {useDataEngine} from "@dhis2/app-runtime";
+import {EngineState} from "./states/engine";
 
 function App() {
+
+    const engine = useDataEngine();
+
+    const initState = (snapshot: MutableSnapshot) => {
+        snapshot.set(EngineState, engine);
+    }
+
     return <DataStoreProvider namespace='kb-ovc-serv-widget' loadingComponent={<Loader/>}>
-        <RecoilRoot>
+        <RecoilRoot initializeState={initState}>
             <MainContainer/>
         </RecoilRoot>
     </DataStoreProvider>;

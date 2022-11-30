@@ -1,4 +1,5 @@
 import {DateTime} from "luxon";
+import {VisualizationDefaultConfig} from "../interfaces";
 
 export const PROGRAM = "em38qztTI8s";
 export const SERVICE_PROVISION_PROGRAM_STAGE = "CHFwighOquA";
@@ -43,4 +44,36 @@ export const SERVICE_PROVISION_DATA_ELEMENTS = [
     'DoU7AeHDsUs',
     'QnFYeBNZlbf',
     'eqhzeRBMftZ',
+]
+
+
+export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
+    {
+        id: "ovc_serv_by_sex",
+        title: "OVC SERV by Sex",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: [
+            {
+                title: "OVC SERV Male",
+                filter: (data) => data.filter(datum => datum.attributes.sex === "Male")
+            },
+            {
+                title: "OVC SERV Female",
+                filter: (data) => data.filter(datum => datum.attributes.sex === "Female")
+            },
+        ],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedBar"
+        ],
+        defaultVisualizationType: "table"
+    }
 ]
