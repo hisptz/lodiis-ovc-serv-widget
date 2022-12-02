@@ -3,7 +3,7 @@ import {OvcServData} from "../interfaces";
 import {chunk, find, flatten, fromPairs, groupBy, head, isEmpty, remove, uniq, uniqBy} from "lodash";
 import {ATTRIBUTES, PROGRAM, SERVICE_PROVISION_DATA_ELEMENTS} from "../constants";
 import {DateTime, Duration} from "luxon";
-import {asyncify, filter, map} from "async";
+import {asyncify, map} from "async";
 
 export interface FilterOptions {
     period: BasePeriod;
@@ -35,14 +35,41 @@ export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {per
 const enrollmentQuery = {
     enrollment: {
         resource: "enrollments",
-        id: ({id}: any) => id,
-        params: {
-            fields: [
-                'enrollmentDate',
-                'enrollment',
-            ]
+        params: ({ids}: any) => {
+            return {
+                fields: [
+                    'enrollmentDate',
+                    'enrollment',
+                ],
+                ouMode: "ACCESSIBLE",
+                enrollment: `${ids.join(';')}`
+            }
         }
     }
+}
+
+
+async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: EnrollmentData[], options: FilterOptions) {
+    const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
+
+    const enrollmentsWithEnrollmentDate = (await options.engine.query(enrollmentQuery, {
+        variables: {
+            ids: enrollments.map(({enrollment}) => enrollment)
+        }
+    }))?.enrollment?.enrollments;
+
+    return enrollments.filter((enrollmentData) => {
+        const enrollmentDate = find(enrollmentsWithEnrollmentDate, ['enrollment', enrollmentData.enrollment])?.enrollmentDate;
+        if (enrollmentDate) {
+            try {
+                const enrollmentDateTime = DateTime.fromISO(enrollmentDate);
+                return lastQuarter.contains(enrollmentDateTime);
+            } catch (e) {
+                console.error("Yep! try again", e);
+            }
+        }
+        return false;
+    })
 }
 
 export async function getFilteredEnrollments(events: Event[], options: FilterOptions,): Promise<EnrollmentData[]> {
@@ -57,24 +84,7 @@ export async function getFilteredEnrollments(events: Event[], options: FilterOpt
     })
     //This removes all enrollments that satisfy first condition grom the enrollments array. The remaining have to be filtered for the second condition;
     const enrollmentsWithEventsOnBothQuarters = remove(enrollments, (enrollment) => enrollmentHasEventsOnBothQuarters(enrollment, options));
-    const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
-    const enrollmentsWithRegistrationOnLastQuarter = await filter(enrollments, asyncify(async (enrollment: EnrollmentData) => {
-        const enrollmentData = await options.engine.query(enrollmentQuery, {
-            variables: {
-                id: enrollment.enrollment
-            }
-        })
-        const data = enrollmentData?.enrollment;
-        if (data) {
-            try {
-                const enrollmentDate = DateTime.fromISO(data.enrollmentDate);
-                return lastQuarter.contains(enrollmentDate);
-            } catch (e) {
-                console.error("Yep! try again", e);
-            }
-        }
-        return false;
-    }))
+    const enrollmentsWithRegistrationOnLastQuarter = await getEnrollmentWithRegistrationOnLastQuarter(enrollments, options);
 
     return uniqBy([...enrollmentsWithEventsOnBothQuarters, ...enrollmentsWithRegistrationOnLastQuarter], 'enrollment')
 }
