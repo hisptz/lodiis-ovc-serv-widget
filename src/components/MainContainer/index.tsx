@@ -1,10 +1,11 @@
 import classes from "./MainContainer.module.css"
 import Filters from "../Filters";
-import Visualization from "../Visualization";
+import VisualizationContainer from "../Visualization";
 import {useData} from "../../hooks";
 import Loader from "../Loader";
 import Error from "../Error"
 import {VISUALIZATIONS} from "../../constants";
+import {Suspense} from "react";
 
 
 export function Visualizations() {
@@ -27,7 +28,7 @@ export function Visualizations() {
         <div className={`${classes['visualizationContainer']}`}>
             {
                 VISUALIZATIONS.map((config) => (
-                    <Visualization config={config} key={`${config.id}-container`}/>
+                    <VisualizationContainer configId={config.id} key={`${config.id}-container`}/>
                 ))
             }
         </div>
@@ -40,7 +41,9 @@ export default function MainContainer() {
     return (
         <div className={classes['container']}>
             <Filters/>
-            <Visualizations/>
+            <Suspense fallback={<Loader/>}>
+                <Visualizations/>
+            </Suspense>
         </div>
     )
 }

@@ -1,4 +1,14 @@
-import {Enrollment, Event} from "@hisptz/dhis2-utils";
+import {BasePeriod, Enrollment, Event} from "@hisptz/dhis2-utils";
+
+export interface AnalyticsData {
+    dx: string;
+    ou: {
+        id: string;
+        name: string;
+    }
+    pe: BasePeriod,
+    value: number
+}
 
 export interface OvcServData {
     enrollment: Enrollment,

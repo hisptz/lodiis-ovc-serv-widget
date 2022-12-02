@@ -1,20 +1,30 @@
-import {VisualizationDefaultConfig} from "../../interfaces";
 import {Button, IconMore16} from "@dhis2/ui"
-import {useRecoilValueLoadable} from "recoil";
-import {VisualizationData} from "../../states/visualization";
+import {useRecoilValue} from "recoil";
+import {VisualizationConfiguration} from "../../states/visualization";
+import CustomDataTable from "./components/CustomDataTable";
+import {Suspense} from "react";
+import Loader from "../Loader";
 
-export default function Visualization({config}: { config: VisualizationDefaultConfig }) {
-    const {title} = config ?? {};
-    const data = useRecoilValueLoadable(VisualizationData(config.id))
-
-    console.log(data.contents)
-
+export function Visualization({configId}: { configId: string }) {
     return (
-        <div className="container-bordered p-8">
+        <div className="column gap-8 w-100">
+            <CustomDataTable configId={configId}/>
+        </div>
+    )
+}
+
+export default function VisualizationContainer({configId}: { configId: string }) {
+    const config = useRecoilValue(VisualizationConfiguration(configId))
+    const {title} = config;
+    return (
+        <div className="container-bordered p-8 column gap-16">
             <div className="row space-between gap-16">
                 <h3 style={{margin: 0}}>{title}</h3>
                 <Button small icon={<IconMore16/>}/>
             </div>
+            <Suspense fallback={<Loader/>}>
+                <Visualization configId={configId}/>
+            </Suspense>
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import {atomFamily, selectorFamily} from "recoil";
-import {OrgUnit, OrgUnitConfig, VisualizationConfig, VisualizationDefaultConfig} from "../interfaces";
+import {AnalyticsData, OrgUnit, OrgUnitConfig, VisualizationConfig, VisualizationDefaultConfig} from "../interfaces";
 import {find, flatten} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
@@ -14,7 +14,7 @@ const orgUnitQuery = {
                 level,
                 fields: [
                     'id',
-                    'displayName'
+                    'displayName~rename(name)'
                 ]
             }
         }
@@ -40,8 +40,6 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
         }
     }
 })
-
-
 export const VisualizationConfiguration = atomFamily<VisualizationConfig, string>({
     key: "visualization-config",
     default: selectorFamily({
@@ -67,9 +65,7 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-
-
-export const VisualizationData = selectorFamily({
+export const VisualizationData = selectorFamily<AnalyticsData[], string>({
     key: "visualization-data",
     get: (id: string) => ({get}) => {
         const {ou, data} = get(VisualizationConfiguration(id))
@@ -77,6 +73,7 @@ export const VisualizationData = selectorFamily({
         const ovcServData = get(OVCServData);
 
         if (!ovcServData) return [];
+        if (!period) return [];
 
         return flatten(data.map(datum => {
             return ou.map(orgUnit => {
