@@ -64,9 +64,8 @@ export default function CustomDataTable({configId}: { configId: string }) {
             <TableBody>
                 {
                     rows.map((row) => {
-                        console.log(row)
                         return (
-                            <DataTableRow>
+                            <DataTableRow key={`${row.id}-row`}>
                                 <DataTableCell>
                                     {row.name}
                                 </DataTableCell>

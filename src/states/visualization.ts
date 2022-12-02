@@ -76,8 +76,9 @@ export const VisualizationData = selectorFamily<AnalyticsData[], string>({
         if (!period) return [];
 
         return flatten(data.map(datum => {
+            const filteredData = datum.filter(ovcServData);
             return ou.map(orgUnit => {
-                const orgUnitData = ovcServData.filter(data => data.orgUnit.path.includes(orgUnit.id))?.length;
+                const orgUnitData = filteredData.filter(data => data.orgUnit.path.includes(orgUnit.id))?.length;
                 return {
                     ou: orgUnit,
                     value: orgUnitData,

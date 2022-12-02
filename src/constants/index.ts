@@ -5,6 +5,16 @@ export const PROGRAM = "em38qztTI8s";
 export const SERVICE_PROVISION_PROGRAM_STAGE = "CHFwighOquA";
 export const DISTRICT_LEVEL = "2";
 
+export const VULNERABILITY_CRITERIA = [
+    'Child of a sex worker (FSW)',
+    'Child exposed/experiencing violence and abuse (Survivors of Vac)',
+    'Child living with disability',
+    'Orphan',
+    'HIV exposed infants',
+    'Child of PLHIV',
+    'Child living with HIV'
+]
+
 
 export const ATTRIBUTES: Record<string, string | { attribute: string; getter: (value?: string) => any }> = {
     sex: "vIX4GTSCX4P",
@@ -58,11 +68,11 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         data: [
             {
-                title: "OVC SERV Male",
+                title: "Male",
                 filter: (data) => data.filter(datum => datum.attributes.sex === "Male")
             },
             {
-                title: "OVC SERV Female",
+                title: "Female",
                 filter: (data) => data.filter(datum => datum.attributes.sex === "Female")
             },
         ],
@@ -75,5 +85,109 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
             "stackedBar"
         ],
         defaultVisualizationType: "table"
-    }
+    },
+    {
+        id: "ovc_serv_by_status",
+        title: "OVC SERV by Status",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: [
+            {
+                title: "Active",
+                filter: (data) => data.filter(datum => datum.attributes.active)
+            },
+            {
+                title: "Graduated",
+                filter: (data) => data.filter(datum => !datum.attributes.active)
+            },
+        ],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedBar"
+        ],
+        defaultVisualizationType: "table"
+    },
+    {
+        id: "ovc_serv_by_age",
+        title: "OVC SERV by Age",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: [
+            {
+                title: "0 - 9",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 0 && datum.attributes.age < 9)
+            },
+            {
+                title: "9 - 12",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 9 && datum.attributes.age < 12)
+            },
+            {
+                title: ">= 12",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 12)
+            },
+        ],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedBar"
+        ],
+        defaultVisualizationType: "table"
+    },
+    {
+        id: "ovc_serv_by_vulnerability_criteria",
+        title: "OVC SERV by Vulnerability Criteria",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: VULNERABILITY_CRITERIA.map((criteria) => ({
+            title: criteria,
+            filter: (data) => data.filter(datum => datum.attributes.primaryVulnerability === criteria)
+        })),
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedBar"
+        ],
+        defaultVisualizationType: "table"
+    },
+    {
+        id: "ovc_serv",
+        title: "OVC SERV",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: [{
+            title: "OVC SERV",
+            filter: (data) => data
+        }],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedBar"
+        ],
+        defaultVisualizationType: "table"
+    },
 ]
