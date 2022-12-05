@@ -22,8 +22,8 @@ function eventHasAtLeastOneService(event: Event): boolean {
 }
 
 export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {period}: FilterOptions): boolean {
-
     const [firstQuarter] = period.interval.splitBy(Duration.fromObject({months: 3}));
+
     const lastQuarterEvents = [...events];
     const firstQuarterEvents = remove(lastQuarterEvents, (event) => {
         const date = DateTime.fromISO(event.eventDate);
@@ -50,16 +50,14 @@ const enrollmentQuery = {
 
 
 async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: EnrollmentData[], options: FilterOptions) {
-    const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
-
-    if (isEmpty(enrollments.map(({enrollment}) => enrollment))) {
-        console.log(enrollments);
+    const enrollmentIds = enrollments.map(({enrollment}) => enrollment)
+    if (isEmpty(enrollmentIds)) {
         return [];
     }
-
+    const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
     const enrollmentsWithEnrollmentDate = (await options.engine.query(enrollmentQuery, {
         variables: {
-            ids: enrollments.map(({enrollment}) => enrollment)
+            ids: enrollmentIds
         }
     }))?.enrollment?.enrollments;
 

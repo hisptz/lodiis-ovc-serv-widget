@@ -25,6 +25,7 @@ const dataQuery = {
             fields: [
                 `event`,
                 `enrollment`,
+                `eventDate`,
                 `dataValues[dataElement,value]`,
                 `trackedEntityInstance`,
                 `orgUnit`
