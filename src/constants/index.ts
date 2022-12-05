@@ -82,7 +82,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedBar"
+            "stackedColumn"
         ],
         defaultVisualizationType: "table"
     },
@@ -110,7 +110,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedBar"
+            "stackedColumn"
         ],
         defaultVisualizationType: "table"
     },
@@ -142,7 +142,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedBar"
+            "stackedColumn"
         ],
         defaultVisualizationType: "table"
     },
@@ -164,7 +164,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedBar"
+            "stackedColumn"
         ],
         defaultVisualizationType: "table"
     },
@@ -186,7 +186,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedBar"
+            "stackedColumn"
         ],
         defaultVisualizationType: "table"
     },

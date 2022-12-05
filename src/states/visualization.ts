@@ -1,5 +1,12 @@
 import {atomFamily, selectorFamily} from "recoil";
-import {AnalyticsData, OrgUnit, OrgUnitConfig, VisualizationConfig, VisualizationDefaultConfig} from "../interfaces";
+import {
+    AnalyticsData,
+    OrgUnit,
+    OrgUnitConfig,
+    VisualizationConfig,
+    VisualizationDefaultConfig,
+    VisualizationType as VisualizationTypeInterface
+} from "../interfaces";
 import {find, flatten} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
@@ -50,7 +57,8 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 defaultLayout,
                 defaultVisualizationType,
                 orgUnitConfig,
-                data
+                data,
+                allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
 
             const ou = get(OrgUnitState(orgUnitConfig))
@@ -60,7 +68,8 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 data,
                 layout: defaultLayout,
                 visualizationType: defaultVisualizationType,
-                ou
+                ou,
+                allowedVisualizationTypes
             }
         }
     })
@@ -88,5 +97,15 @@ export const VisualizationData = selectorFamily<AnalyticsData[], string>({
             })
         }))
 
+    }
+})
+
+export const VisualizationType = atomFamily<VisualizationTypeInterface, string>({
+    key: "visualization-layout-state",
+    default: (id: string) => {
+        const {
+            defaultVisualizationType
+        } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
+        return defaultVisualizationType;
     }
 })

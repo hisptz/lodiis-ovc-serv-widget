@@ -57,7 +57,8 @@ export default function CustomDataTable({configId}: { configId: string }) {
                     }
                     {
                         columns.map(({id, name}) => (
-                            <DataTableColumnHeader key={`${id}-column-header`}>{name}</DataTableColumnHeader>))
+                            <DataTableColumnHeader align="center"
+                                                   key={`${id}-column-header`}>{name}</DataTableColumnHeader>))
                     }
                 </DataTableRow>
             </TableHead>
@@ -66,7 +67,7 @@ export default function CustomDataTable({configId}: { configId: string }) {
                     rows.map((row) => {
                         return (
                             <DataTableRow key={`${row.id}-row`}>
-                                <DataTableCell>
+                                <DataTableCell bordered>
                                     {row.name}
                                 </DataTableCell>
                                 {
@@ -83,7 +84,7 @@ export default function CustomDataTable({configId}: { configId: string }) {
                                         })?.value;
 
                                         return (
-                                            <DataTableCell key={`${column.id}-${row.id}-data`}>
+                                            <DataTableCell align="center" bordered key={`${column.id}-${row.id}-data`}>
                                                 {value}
                                             </DataTableCell>
                                         )

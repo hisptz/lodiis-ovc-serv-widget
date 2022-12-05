@@ -10,9 +10,9 @@ import {Dimension, VisualizationType} from "../../../../interfaces";
 
 function getChartType(visualizationType: VisualizationType): string {
     switch (visualizationType) {
-        case "bar":
+        case "column":
             return "column";
-        case "stackedBar":
+        case "stackedColumn":
             return "column";
         default:
             return "column"

@@ -20,7 +20,7 @@ export interface OvcServData {
     attributes: Record<string, any>
 }
 
-export type VisualizationType = "table" | "stackedBar" | "bar"
+export type VisualizationType = "table" | "stackedColumn" | "column"
 
 export type Dimension = "pe" | "dx" | "ou";
 
@@ -61,6 +61,7 @@ export interface VisualizationConfig {
     id: string;
     title: string;
     visualizationType: VisualizationType,
+    allowedVisualizationTypes: VisualizationType[];
     layout: VisualizationLayout;
     ou: { name: string; id: string }[];
     data: {
