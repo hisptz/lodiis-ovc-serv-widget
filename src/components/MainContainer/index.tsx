@@ -1,12 +1,12 @@
 import classes from "./MainContainer.module.css"
 import Filters from "../Filters";
-import VisualizationContainer from "../Visualization";
 import {useData} from "../../hooks";
 import Loader from "../Loader";
 import Error from "../Error"
 import {VISUALIZATIONS} from "../../constants";
-import {Suspense} from "react";
+import {lazy, Suspense} from "react";
 
+const VisualizationContainer = lazy(() => import("../Visualization"));
 
 export function Visualizations() {
     const {loading, error} = useData();

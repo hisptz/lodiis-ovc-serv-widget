@@ -1,7 +1,7 @@
 const request = (url: string, options: Record<string, any>) => {
     const abortController = new AbortController();
 
-    const promise = new Promise((resolve, reject) => {
+    const promise: any = new Promise((resolve, reject) => {
         fetch(url, {
             ...options,
             credentials: "include",

@@ -28,6 +28,10 @@ const getServerVersion = async (baseUrl: string, authorization?: string) => {
     }
 }
 
+function renderError(error: any) {
+    return ReactDOM.createRoot(root).render(<code>{error.toString()}</code>)
+}
+
 const renderProductionApp = async () => {
     const render = (baseUrl: string, apiVersion: number, serverVersion: { full: string, major: number, minor: number, patch: number }) =>
         ReactDOM.createRoot(root).render(
@@ -43,14 +47,19 @@ const renderProductionApp = async () => {
             </Provider>,
         )
     try {
-
-        const manifest = await (await fetch('./manifest.webapp')).json()
-        const serverVersion = await getServerVersion(manifest.baseUrl);
-
-        render(manifest.activities.dhis.href, serverVersion.minor, serverVersion)
+        fetch('./manifest.webapp').then((response) => response.json()).then((manifest) => {
+            const baseUrl = manifest?.activities?.dhis?.href ?? "";
+            getServerVersion(baseUrl).then((serverVersion) => {
+                render(baseUrl, serverVersion.minor, serverVersion);
+            }).catch((error) => {
+                renderError(error);
+            });
+        }).catch((error) => {
+            renderError(error);
+        });
     } catch (error) {
         console.error('Could not read manifest:', error)
-        ReactDOM.createRoot(root).render(<code>No manifest found</code>)
+
     }
 }
 
@@ -89,6 +98,4 @@ if (import.meta.env.PROD) {
 } else {
     renderDevApp()
 }
-
-
 

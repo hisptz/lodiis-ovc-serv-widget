@@ -29,7 +29,7 @@ function useChartOptions(configId: string): Highcharts.Options {
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
     const chartType = getChartType(visualizationType);
 
-    const chartSeries: Highcharts.SeriesOptionsType[] = flatten(layout.series.map((dimension) => {
+    const chartSeries: any = flatten(layout.series.map((dimension) => {
         const dimensionItem = getDimensionValues(dimension, data);
         return dimensionItem.map((item) => {
             return {
@@ -39,12 +39,22 @@ function useChartOptions(configId: string): Highcharts.Options {
                     return find(data, (datum) => {
                         const categoryValue = datum[head(layout.category) as Dimension];
                         const seriesValue = datum[dimension as Dimension];
+                        let categoryId;
+                        let seriesId;
 
-                        const categoryId = categoryValue?.id ?? categoryValue;
-                        const seriesId = seriesValue.id ?? seriesValue;
+                        if (typeof categoryValue === "string") {
+                            categoryId = categoryValue;
+                        } else {
+                            categoryId = categoryValue?.id;
+                        }
 
+                        if (typeof seriesValue === "string") {
+                            seriesId = seriesValue;
+                        } else {
+                            seriesId = seriesValue?.id;
+                        }
                         return categoryId === category.id && seriesId === item.id;
-                    })?.value as number
+                    })?.value;
                 })
             }
         })

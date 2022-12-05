@@ -76,9 +76,20 @@ export default function CustomDataTable({configId}: { configId: string }) {
                                             const categoryValue = datum[head(layout.category) as Dimension];
                                             const seriesValue = datum[head(layout.series) as Dimension];
 
-                                            const categoryId = categoryValue?.id ?? categoryValue;
-                                            const seriesId = seriesValue.id ?? seriesValue;
+                                            let categoryId;
+                                            let seriesId;
 
+                                            if (typeof categoryValue === "string") {
+                                                categoryId = categoryValue;
+                                            } else {
+                                                categoryId = categoryValue?.id;
+                                            }
+
+                                            if (typeof seriesValue === "string") {
+                                                seriesId = seriesValue;
+                                            } else {
+                                                seriesId = seriesValue?.id;
+                                            }
                                             return categoryId === row.id && seriesId === column.id;
 
                                         })?.value;
