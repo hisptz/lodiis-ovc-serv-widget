@@ -3,6 +3,7 @@ import {VisualizationConfiguration, VisualizationData} from "../../../../states/
 import {AnalyticsData, Dimension, VisualizationLayout} from "../../../../interfaces";
 import {find, head, uniqBy} from "lodash";
 import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody, TableHead} from "@dhis2/ui"
+import classes from "./CustomDataTable.module.css"
 
 export function getDimensionName(dimension: Dimension): string {
     switch (dimension) {
@@ -57,7 +58,7 @@ export default function CustomDataTable({configId}: { configId: string }) {
                     }
                     {
                         columns.map(({id, name}) => (
-                            <DataTableColumnHeader align="center"
+                            <DataTableColumnHeader className={classes['columnHeader']} align="center"
                                                    key={`${id}-column-header`}>{name}</DataTableColumnHeader>))
                     }
                 </DataTableRow>

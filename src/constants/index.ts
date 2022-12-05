@@ -124,16 +124,28 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         data: [
             {
-                title: "0 - 9",
-                filter: (data) => data.filter(datum => datum.attributes.age >= 0 && datum.attributes.age < 9)
+                title: "> 1",
+                filter: (data) => data.filter(datum => datum.attributes.age < 1)
             },
             {
-                title: "9 - 12",
-                filter: (data) => data.filter(datum => datum.attributes.age >= 9 && datum.attributes.age < 12)
+                title: "1 - 4",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 1 && datum.attributes.age < 5)
             },
             {
-                title: ">= 12",
-                filter: (data) => data.filter(datum => datum.attributes.age >= 12)
+                title: "5 - 9",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 5 && datum.attributes.age < 10)
+            },
+            {
+                title: "10 - 14",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 10 && datum.attributes.age < 15)
+            },
+            {
+                title: "15 - 17",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 15 && datum.attributes.age < 18)
+            },
+            {
+                title: ">= 18",
+                filter: (data) => data.filter(datum => datum.attributes.age >= 18)
             },
         ],
         orgUnitConfig: {
