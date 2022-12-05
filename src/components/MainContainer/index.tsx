@@ -1,18 +1,20 @@
 import classes from "./MainContainer.module.css"
 import Filters from "../Filters";
-import Visualization from "../Visualization";
+import VisualizationContainer from "../Visualization";
 import {useData} from "../../hooks";
 import Loader from "../Loader";
 import Error from "../Error"
+import {VISUALIZATIONS} from "../../constants";
+import {Suspense} from "react";
 
 
 export function Visualizations() {
-    const {loading, error, data, progress} = useData();
+    const {loading, error} = useData();
 
 
     if (loading) {
         return (
-            <Loader progress={progress} text={`Loading data, please wait...`}/>
+            <Loader text={`Loading data, please wait...`}/>
         )
     }
 
@@ -25,8 +27,8 @@ export function Visualizations() {
     return (
         <div className={`${classes['visualizationContainer']}`}>
             {
-                Array.from(Array(10).keys()).map((index) => (
-                    <Visualization key={`${index}-option`} name={index.toString()}/>
+                VISUALIZATIONS.map((config) => (
+                    <VisualizationContainer configId={config.id} key={`${config.id}-container`}/>
                 ))
             }
         </div>
@@ -39,7 +41,9 @@ export default function MainContainer() {
     return (
         <div className={classes['container']}>
             <Filters/>
-            <Visualizations/>
+            <Suspense fallback={<Loader/>}>
+                <Visualizations/>
+            </Suspense>
         </div>
     )
 }
