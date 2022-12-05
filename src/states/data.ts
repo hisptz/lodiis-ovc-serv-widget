@@ -21,7 +21,7 @@ const dataQuery = {
             programStage: SERVICE_PROVISION_PROGRAM_STAGE,
             totalPages: true,
             page,
-            pageSize: 10,
+            pageSize: 100,
             fields: [
                 `event`,
                 `enrollment`,

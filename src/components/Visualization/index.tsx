@@ -1,14 +1,14 @@
 import {Button, IconMore16} from "@dhis2/ui"
 import {useRecoilValue} from "recoil";
 import {VisualizationConfiguration} from "../../states/visualization";
-import CustomDataTable from "./components/CustomDataTable";
 import {Suspense} from "react";
 import Loader from "../Loader";
+import Chart from "./components/Chart";
 
 export function Visualization({configId}: { configId: string }) {
     return (
         <div className="column gap-8 w-100">
-            <CustomDataTable configId={configId}/>
+            <Chart configId={configId}/>
         </div>
     )
 }

@@ -52,6 +52,11 @@ const enrollmentQuery = {
 async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: EnrollmentData[], options: FilterOptions) {
     const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
 
+    if (isEmpty(enrollments.map(({enrollment}) => enrollment))) {
+        console.log(enrollments);
+        return [];
+    }
+
     const enrollmentsWithEnrollmentDate = (await options.engine.query(enrollmentQuery, {
         variables: {
             ids: enrollments.map(({enrollment}) => enrollment)

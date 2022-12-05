@@ -4,7 +4,7 @@ import {AnalyticsData, Dimension, VisualizationLayout} from "../../../../interfa
 import {find, head, uniqBy} from "lodash";
 import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody, TableHead} from "@dhis2/ui"
 
-function getDimensionName(dimension: Dimension): string {
+export function getDimensionName(dimension: Dimension): string {
     switch (dimension) {
         case "dx":
             return "Data";
@@ -23,7 +23,7 @@ function getRowHeader(layout: VisualizationLayout) {
     return [categoryNames.join(', '), seriesNames.join(', ')].join('/');
 }
 
-function getDimensionValues(dimension: Dimension, data: AnalyticsData[]): { id: string, name: string }[] {
+export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]): { id: string, name: string }[] {
     switch (dimension) {
         case "pe":
             return uniqBy(data.map(({pe}) => ({id: pe.id, name: pe.name})), 'id');
