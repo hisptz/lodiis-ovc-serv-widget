@@ -5,11 +5,14 @@ import Loader from "../Loader";
 import Error from "../Error"
 import {VISUALIZATIONS} from "../../constants";
 import {lazy, Suspense} from "react";
+import {useRecoilValue} from "recoil";
+import {PeriodFilterState} from "../Filters/state";
 
 const VisualizationContainer = lazy(() => import("../Visualization"));
 
 export function Visualizations() {
     const {loading, error} = useData();
+    const period = useRecoilValue(PeriodFilterState)
 
 
     if (loading) {
@@ -21,6 +24,14 @@ export function Visualizations() {
     if (error) {
         return (
             <Error error={error?.message}/>
+        )
+    }
+
+    if (!period) {
+        return (
+            <div style={{minHeight: 400}} className="column w-100 h-100 align-items-center center">
+                <h3>Select period to start</h3>
+            </div>
         )
     }
 
