@@ -5,6 +5,7 @@ export interface AnalyticsData {
     ou: {
         id: string;
         name: string;
+        level?: number;
     }
     pe: BasePeriod,
     value: number

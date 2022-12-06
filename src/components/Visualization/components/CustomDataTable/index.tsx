@@ -4,6 +4,9 @@ import {AnalyticsData, Dimension, VisualizationLayout} from "../../../../interfa
 import {find, head, uniqBy} from "lodash";
 import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody, TableHead} from "@dhis2/ui"
 import classes from "./CustomDataTable.module.css"
+import React, {Suspense, useState} from "react";
+import Loader from "../../../Loader";
+import {LOWEST_LEVEL} from "../../../../constants";
 
 export function getDimensionName(dimension: Dimension): string {
     switch (dimension) {
@@ -24,7 +27,7 @@ function getRowHeader(layout: VisualizationLayout) {
     return [categoryNames.join(', '), seriesNames.join(', ')].join('/');
 }
 
-export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]): { id: string, name: string }[] {
+export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]): { id: string, name: string; level?: number }[] {
     switch (dimension) {
         case "pe":
             return uniqBy(data.map(({pe}) => ({id: pe.id, name: pe.name})), 'id');
@@ -35,23 +38,30 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
     }
 }
 
-export default function CustomDataTable({configId}: { configId: string }) {
+export default function CustomDataTable({configId, orgUnitId}: { configId: string; orgUnitId?: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData({configId}));
-    const ref = useSetRecoilState(VisualizationRef(configId))
+    const data = useRecoilValue(VisualizationData({configId, orgUnitId}));
+    const ref = useSetRecoilState(VisualizationRef(configId));
+    const [expanded, setExpanded] = useState<string | undefined>();
 
     const {layout} = config;
     const columns = getDimensionValues(head(layout.series) as Dimension, data);
     const rows = getDimensionValues(head(layout.category) as Dimension, data);
 
 
-    const rowHeader = getRowHeader(layout);
+    const shouldDrill = rows.every((row) => {
+        return (row.level as number) < LOWEST_LEVEL;
+    });
 
+    const rowHeader = getRowHeader(layout);
 
     return (
         <DataTable ref={ref}>
             <TableHead>
                 <DataTableRow>
+                    {
+                        shouldDrill && (<DataTableColumnHeader/>)
+                    }
                     {
                         <DataTableColumnHeader>
                             {rowHeader}
@@ -68,7 +78,20 @@ export default function CustomDataTable({configId}: { configId: string }) {
                 {
                     rows.map((row) => {
                         return (
-                            <DataTableRow key={`${row.id}-row`}>
+                            <DataTableRow
+                                expanded={expanded === row.id}
+                                onExpandToggle={() => {
+                                    if (expanded === row.id) {
+                                        setExpanded(undefined);
+                                    } else {
+                                        setExpanded(row.id)
+                                    }
+                                }}
+                                key={`${row.id}-row`}
+                                expandableContent={shouldDrill && <Suspense fallback={<Loader/>}>
+                                    <CustomDataTable configId={configId} orgUnitId={row.id}/>
+                                </Suspense>}
+                            >
                                 <DataTableCell bordered>
                                     {row.name}
                                 </DataTableCell>

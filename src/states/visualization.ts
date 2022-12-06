@@ -22,6 +22,7 @@ const orgUnitQuery = {
                 level,
                 fields: [
                     'id',
+                    'level',
                     'displayName~rename(name)'
                 ]
             }
@@ -35,7 +36,8 @@ const drillDownQuery = {
         params: {
             fields: [
                 'id',
-                'childrenOrganisationUnits[id,displayName~rename(name)]'
+                'level',
+                'children[id,displayName~rename(name),level]'
             ]
         }
     }
@@ -52,7 +54,7 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
                     id: orgUnitId
                 }
             })
-            return data?.orgUnit?.childrenOrganisationUnits
+            return data?.orgUnit?.children ?? []
         }
 
         const {type, ous, level} = config ?? {}
