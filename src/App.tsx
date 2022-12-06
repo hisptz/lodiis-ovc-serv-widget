@@ -4,6 +4,11 @@ import Loader from "./components/Loader";
 import {MutableSnapshot, RecoilRoot} from "recoil";
 import {useDataEngine} from "@dhis2/app-runtime";
 import {EngineState} from "./states/engine";
+import HighChartsExport from "highcharts/modules/exporting";
+import HighCharts from "highcharts";
+
+HighChartsExport(HighCharts);
+
 
 function App() {
 

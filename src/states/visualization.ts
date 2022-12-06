@@ -12,6 +12,7 @@ import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {OVCServData} from "./data";
 import {EngineState} from "./engine";
+import React from "react";
 
 const orgUnitQuery = {
     orgUnits: {
@@ -108,4 +109,10 @@ export const VisualizationType = atomFamily<VisualizationTypeInterface, string>(
         } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
         return defaultVisualizationType;
     }
+})
+
+export const VisualizationRef = atomFamily<React.Ref<any>, string>({
+    key: "visualization-ref",
+    default: null,
+    dangerouslyAllowMutability: true,
 })
