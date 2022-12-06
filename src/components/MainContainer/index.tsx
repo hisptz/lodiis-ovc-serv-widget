@@ -2,11 +2,12 @@ import classes from "./MainContainer.module.css"
 import Filters from "../Filters";
 import {useData} from "../../hooks";
 import Loader from "../Loader";
-import Error from "../Error"
 import {VISUALIZATIONS} from "../../constants";
 import {lazy, Suspense} from "react";
 import {useRecoilValue} from "recoil";
 import {PeriodFilterState} from "../Filters/state";
+import {ErrorBoundary} from "react-error-boundary";
+import ErrorFallback from "../Error";
 
 const VisualizationContainer = lazy(() => import("../Visualization"));
 
@@ -22,9 +23,7 @@ export function Visualizations() {
     }
 
     if (error) {
-        return (
-            <Error error={error?.message}/>
-        )
+        throw Error(error?.message)
     }
 
     if (!period) {
@@ -48,13 +47,14 @@ export function Visualizations() {
 
 export default function MainContainer() {
 
-
     return (
         <div className={classes['container']}>
             <Filters/>
-            <Suspense fallback={<Loader/>}>
-                <Visualizations/>
-            </Suspense>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<Loader/>}>
+                    <Visualizations/>
+                </Suspense>
+            </ErrorBoundary>
         </div>
     )
 }
