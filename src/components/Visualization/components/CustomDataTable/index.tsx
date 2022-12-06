@@ -1,5 +1,5 @@
-import {useRecoilValue} from "recoil";
-import {VisualizationConfiguration, VisualizationData} from "../../../../states/visualization";
+import {useRecoilValue, useSetRecoilState} from "recoil";
+import {VisualizationConfiguration, VisualizationData, VisualizationRef} from "../../../../states/visualization";
 import {AnalyticsData, Dimension, VisualizationLayout} from "../../../../interfaces";
 import {find, head, uniqBy} from "lodash";
 import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody, TableHead} from "@dhis2/ui"
@@ -38,6 +38,7 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
 export default function CustomDataTable({configId}: { configId: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
     const data = useRecoilValue(VisualizationData(configId));
+    const ref = useSetRecoilState(VisualizationRef(configId))
 
     const {layout} = config;
     const columns = getDimensionValues(head(layout.series) as Dimension, data);
@@ -48,7 +49,7 @@ export default function CustomDataTable({configId}: { configId: string }) {
 
 
     return (
-        <DataTable>
+        <DataTable ref={ref}>
             <TableHead>
                 <DataTableRow>
                     {

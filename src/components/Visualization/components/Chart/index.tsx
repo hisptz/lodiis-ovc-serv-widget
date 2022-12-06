@@ -1,8 +1,7 @@
 import * as Highcharts from 'highcharts';
 import HighchartsReact from "highcharts-react-official";
-import {useRef} from "react";
-import {useRecoilValue} from "recoil";
-import {VisualizationConfiguration, VisualizationData} from "../../../../states/visualization";
+import {useRecoilValue, useSetRecoilState} from "recoil";
+import {VisualizationConfiguration, VisualizationData, VisualizationRef} from "../../../../states/visualization";
 import {getDimensionValues} from "../CustomDataTable";
 import {find, flatten, head} from "lodash";
 import {Dimension, VisualizationType} from "../../../../interfaces";
@@ -67,7 +66,8 @@ function useChartOptions(configId: string): Highcharts.Options {
     return {
         chart: {
             renderTo: configId,
-            type: "column"
+            type: "column",
+
         },
         plotOptions: {
             column: {
@@ -80,9 +80,27 @@ function useChartOptions(configId: string): Highcharts.Options {
         credits: {
             enabled: false
         },
+        yAxis: [
+            {
+                allowDecimals: false,
+                title: {
+                    text: "Enrollments",
+                    style: {color: "#000000", fontWeight: "normal", fontSize: "14px"}
+                }
+            }
+        ],
         series: chartSeries,
         colors: ["#2f7ed8", "#0d233a", "#8bbc21", "#910000", "#1aadce", "#492970", "#f28f43", "#77a1e5", "#c42525", "#a6c96a"],
+        exporting: {
+            buttons: {
+                contextButton: {enabled: false}
+            }
+        },
         xAxis: {
+            title: {
+                text: "Districts",
+                style: {color: "#000000", fontWeight: "normal", fontSize: "14px"}
+            },
             type: "category",
             categories: chartCategories,
             crosshair: true,
@@ -94,19 +112,18 @@ function useChartOptions(configId: string): Highcharts.Options {
 }
 
 export default function Chart({configId}: { configId: string }) {
-
+    const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
     const options = useChartOptions(configId);
-
-    const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
 
     return (
         <HighchartsReact
             containerProps={{
-                id: configId
+                id: configId,
+
             }}
             highcharts={Highcharts}
             options={options}
-            ref={chartComponentRef}
+            ref={chartComponentRef as any}
         />
     );
 }
