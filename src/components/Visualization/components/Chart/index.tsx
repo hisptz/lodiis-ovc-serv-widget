@@ -25,14 +25,11 @@ function getChartType(visualizationType: VisualizationTypeInterface): string {
 
 function useChartOptions(configId: string): Highcharts.Options {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData(configId));
+    const data = useRecoilValue(VisualizationData({configId}));
     const visualizationType = useRecoilValue(VisualizationType(configId))
-
     const {layout} = config;
-
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
     const chartType = getChartType(visualizationType);
-
     const chartSeries: any = flatten(layout.series.map((dimension) => {
         const dimensionItem = getDimensionValues(dimension, data);
         return dimensionItem.map((item) => {

@@ -61,9 +61,9 @@ export interface VisualizationConfig {
     id: string;
     title: string;
     visualizationType: VisualizationType,
+    orgUnitConfig: OrgUnitConfig
     allowedVisualizationTypes: VisualizationType[];
     layout: VisualizationLayout;
-    ou: { name: string; id: string }[];
     data: {
         title: string;
         filter: (data: OvcServData[]) => OvcServData[]

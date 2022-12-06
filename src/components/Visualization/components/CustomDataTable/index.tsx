@@ -37,7 +37,7 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
 
 export default function CustomDataTable({configId}: { configId: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData(configId));
+    const data = useRecoilValue(VisualizationData({configId}));
     const ref = useSetRecoilState(VisualizationRef(configId))
 
     const {layout} = config;
