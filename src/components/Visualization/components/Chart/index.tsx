@@ -118,15 +118,18 @@ function useChartOptions(configId: string): Highcharts.Options {
         }
     }
 }
-
 export default function Chart({configId}: { configId: string }) {
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
     const options = useChartOptions(configId);
 
     return (
         <HighchartsReact
+            immutable
             containerProps={{
                 id: configId,
+                style: {
+                    height: "100%"
+                }
             }}
             highcharts={Highcharts}
             options={options}
