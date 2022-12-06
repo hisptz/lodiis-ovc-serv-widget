@@ -4,6 +4,7 @@ import {VisualizationDefaultConfig} from "../interfaces";
 export const PROGRAM = "em38qztTI8s";
 export const SERVICE_PROVISION_PROGRAM_STAGE = "CHFwighOquA";
 export const DISTRICT_LEVEL = "2";
+export const LOWEST_LEVEL = 3;
 
 export const VULNERABILITY_CRITERIA = [
     'Child of a sex worker (FSW)',

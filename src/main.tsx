@@ -6,6 +6,8 @@ import './styles/common.css'
 import {Provider,} from "@dhis2/app-runtime";
 import {checkAuth, login} from "./utils/login";
 import {CssReset} from "@dhis2/ui";
+import {ErrorBoundary} from "react-error-boundary";
+import ErrorFallback from "./components/Error"
 
 const root = document.getElementById('root') as HTMLElement;
 
@@ -35,16 +37,20 @@ function renderError(error: any) {
 const renderProductionApp = async () => {
     const render = (baseUrl: string, apiVersion: number, serverVersion: { full: string, major: number, minor: number, patch: number }) =>
         ReactDOM.createRoot(root).render(
-            <Provider
-                config={{
-                    baseUrl,
-                    apiVersion,
-                    serverVersion
-                }}
-            >
+            <>
                 <CssReset/>
-                <App/>
-            </Provider>,
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                    <Provider
+                        config={{
+                            baseUrl,
+                            apiVersion,
+                            serverVersion
+                        }}
+                    >
+                        <App/>
+                    </Provider>
+                </ErrorBoundary>
+            </>,
         )
     try {
         fetch('./manifest.webapp').then((response) => response.json()).then((manifest) => {
@@ -86,9 +92,11 @@ const renderDevApp = async () => {
     ReactDOM.createRoot(root).render(
         <React.StrictMode>
             <CssReset/>
-            <Provider config={config}>
-                <App/>
-            </Provider>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Provider config={config}>
+                    <App/>
+                </Provider>
+            </ErrorBoundary>
         </React.StrictMode>
     )
 }

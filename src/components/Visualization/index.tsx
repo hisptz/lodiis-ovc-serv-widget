@@ -7,6 +7,8 @@ import Chart from "./components/Chart";
 import CustomDataTable from "./components/CustomDataTable";
 import {utils as xlsx, writeFile} from "xlsx";
 import {PeriodFilterState} from "../Filters/state";
+import {ErrorBoundary} from "react-error-boundary";
+import ErrorFallback from "../Error";
 
 function decamelize(str: string, separator: string): string {
     separator = typeof separator === 'undefined' ? '_' : separator;
@@ -19,6 +21,7 @@ function decamelize(str: string, separator: string): string {
 
 export function Visualization({configId}: { configId: string }) {
     const type = useRecoilValue(VisualizationType(configId));
+
 
     return (
         <div className="column gap-8 w-100 h-100">
@@ -123,6 +126,7 @@ export function VisualizationSwitchIcon({configId}: { configId: string }) {
 export default function VisualizationContainer({configId}: { configId: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
 
+
     const {title} = config;
     return (
         <div className="container-bordered p-8 column gap-16">
@@ -132,9 +136,11 @@ export default function VisualizationContainer({configId}: { configId: string })
                     <VisualizationSwitchIcon configId={configId}/>
                 </div>
             </div>
-            <Suspense fallback={<Loader/>}>
-                <Visualization configId={configId}/>
-            </Suspense>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<Loader/>}>
+                    <Visualization configId={configId}/>
+                </Suspense>
+            </ErrorBoundary>
         </div>
     )
 }
