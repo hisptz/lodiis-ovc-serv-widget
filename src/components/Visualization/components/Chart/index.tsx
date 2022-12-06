@@ -119,7 +119,6 @@ export default function Chart({configId}: { configId: string }) {
         <HighchartsReact
             containerProps={{
                 id: configId,
-
             }}
             highcharts={Highcharts}
             options={options}
