@@ -28,13 +28,34 @@ const orgUnitQuery = {
         }
     }
 }
+const drillDownQuery = {
+    orgUnit: {
+        resource: "organisationUnits",
+        id: ({id}) => id,
+        params: {
+            fields: [
+                'id',
+                'childrenOrganisationUnits[id,displayName~rename(name)]'
+            ]
+        }
+    }
+}
 
 export const OrgUnitState = selectorFamily<OrgUnit[], any>({
     key: "org-unit-state",
-    get: (config: OrgUnitConfig) => async ({get}) => {
-        const engine = get(EngineState)
-        const {type, ous, level} = config ?? {}
+    get: ({config, orgUnitId}: { config?: OrgUnitConfig, orgUnitId?: string }) => async ({get}) => {
+        const engine = get(EngineState);
 
+        if (orgUnitId) {
+            const data = await engine.query(drillDownQuery, {
+                variables: {
+                    id: orgUnitId
+                }
+            })
+            return data?.orgUnit?.childrenOrganisationUnits
+        }
+
+        const {type, ous, level} = config ?? {}
         if (type === "level") {
             //get level orgUnits by analytics api
             const data = await engine.query(orgUnitQuery, {
@@ -47,7 +68,8 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
             return ous ?? [];
         }
     }
-})
+});
+
 export const VisualizationConfiguration = atomFamily<VisualizationConfig, string>({
     key: "visualization-config",
     default: selectorFamily({
@@ -61,26 +83,25 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 data,
                 allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
-
-            const ou = get(OrgUnitState(orgUnitConfig))
             return {
                 id,
                 title,
                 data,
+                orgUnitConfig,
                 layout: defaultLayout,
                 visualizationType: defaultVisualizationType,
-                ou,
                 allowedVisualizationTypes
             }
         }
     })
 })
-export const VisualizationData = selectorFamily<AnalyticsData[], string>({
+export const VisualizationData = selectorFamily<AnalyticsData[], { configId: string, orgUnitId?: string }>({
     key: "visualization-data",
-    get: (id: string) => ({get}) => {
-        const {ou, data} = get(VisualizationConfiguration(id))
+    get: ({configId, orgUnitId}: { configId: string, orgUnitId?: string }) => ({get}) => {
+        const {data, orgUnitConfig} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);
+        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}))
 
         if (!ovcServData) return [];
         if (!period) return [];
