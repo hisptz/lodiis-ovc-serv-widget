@@ -1,13 +1,18 @@
 import * as Highcharts from 'highcharts';
 import HighchartsReact from "highcharts-react-official";
 import {useRecoilValue, useSetRecoilState} from "recoil";
-import {VisualizationConfiguration, VisualizationData, VisualizationRef} from "../../../../states/visualization";
-import {getDimensionValues} from "../CustomDataTable";
+import {
+    VisualizationConfiguration,
+    VisualizationData,
+    VisualizationRef,
+    VisualizationType
+} from "../../../../states/visualization";
+import {getDimensionName, getDimensionValues} from "../CustomDataTable";
 import {find, flatten, head} from "lodash";
-import {Dimension, VisualizationType} from "../../../../interfaces";
+import {Dimension, VisualizationType as VisualizationTypeInterface} from "../../../../interfaces";
 
 
-function getChartType(visualizationType: VisualizationType): string {
+function getChartType(visualizationType: VisualizationTypeInterface): string {
     switch (visualizationType) {
         case "column":
             return "column";
@@ -18,12 +23,12 @@ function getChartType(visualizationType: VisualizationType): string {
     }
 }
 
-
 function useChartOptions(configId: string): Highcharts.Options {
     const config = useRecoilValue(VisualizationConfiguration(configId));
     const data = useRecoilValue(VisualizationData(configId));
+    const visualizationType = useRecoilValue(VisualizationType(configId))
 
-    const {layout, visualizationType} = config;
+    const {layout} = config;
 
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
     const chartType = getChartType(visualizationType);
@@ -61,7 +66,10 @@ function useChartOptions(configId: string): Highcharts.Options {
 
     const chartCategories = categories.map((category) => {
         return category.name;
-    })
+    });
+
+    const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension);
+    const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension);
 
     return {
         chart: {
@@ -71,7 +79,7 @@ function useChartOptions(configId: string): Highcharts.Options {
         },
         plotOptions: {
             column: {
-                stacking: "normal"
+                stacking: visualizationType === "stackedColumn" ? "normal" : undefined
             }
         },
         title: {
@@ -84,7 +92,7 @@ function useChartOptions(configId: string): Highcharts.Options {
             {
                 allowDecimals: false,
                 title: {
-                    text: "Enrollments",
+                    text: seriesDimensionTitle,
                     style: {color: "#000000", fontWeight: "normal", fontSize: "14px"}
                 }
             }
@@ -98,7 +106,7 @@ function useChartOptions(configId: string): Highcharts.Options {
         },
         xAxis: {
             title: {
-                text: "Districts",
+                text: categoryDimensionTitle,
                 style: {color: "#000000", fontWeight: "normal", fontSize: "14px"}
             },
             type: "category",
@@ -110,16 +118,18 @@ function useChartOptions(configId: string): Highcharts.Options {
         }
     }
 }
-
 export default function Chart({configId}: { configId: string }) {
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
     const options = useChartOptions(configId);
 
     return (
         <HighchartsReact
+            immutable
             containerProps={{
                 id: configId,
-
+                style: {
+                    height: "100%"
+                }
             }}
             highcharts={Highcharts}
             options={options}

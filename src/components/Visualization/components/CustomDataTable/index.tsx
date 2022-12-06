@@ -8,11 +8,11 @@ import classes from "./CustomDataTable.module.css"
 export function getDimensionName(dimension: Dimension): string {
     switch (dimension) {
         case "dx":
-            return "Data";
+            return "Number of beneficiaries served";
         case "pe":
             return "Period";
         case "ou":
-            return "Organisation Units"
+            return "Districts"
     }
 }
 

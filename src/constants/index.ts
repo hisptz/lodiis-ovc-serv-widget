@@ -59,6 +59,29 @@ export const SERVICE_PROVISION_DATA_ELEMENTS = [
 
 export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
     {
+        id: "ovc_serv",
+        title: "OVC SERV",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        data: [{
+            title: "OVC SERV",
+            filter: (data) => data
+        }],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedColumn",
+            "column"
+        ],
+        defaultVisualizationType: "stackedColumn"
+    },
+    {
         id: "ovc_serv_by_sex",
         title: "OVC SERV by Sex",
         defaultLayout: {
@@ -82,9 +105,10 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn"
+            "stackedColumn",
+            "column"
         ],
-        defaultVisualizationType: "table"
+        defaultVisualizationType: "stackedColumn"
     },
     {
         id: "ovc_serv_by_status",
@@ -110,9 +134,10 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn"
+            "stackedColumn",
+            "column"
         ],
-        defaultVisualizationType: "table"
+        defaultVisualizationType: "stackedColumn"
     },
     {
         id: "ovc_serv_by_age",
@@ -124,7 +149,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         data: [
             {
-                title: "> 1",
+                title: "< 1",
                 filter: (data) => data.filter(datum => datum.attributes.age < 1)
             },
             {
@@ -144,7 +169,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
                 filter: (data) => data.filter(datum => datum.attributes.age >= 15 && datum.attributes.age < 18)
             },
             {
-                title: ">= 18",
+                title: "18+",
                 filter: (data) => data.filter(datum => datum.attributes.age >= 18)
             },
         ],
@@ -154,9 +179,10 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn"
+            "stackedColumn",
+            "column"
         ],
-        defaultVisualizationType: "table"
+        defaultVisualizationType: "stackedColumn"
     },
     {
         id: "ovc_serv_by_vulnerability_criteria",
@@ -176,30 +202,9 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn"
+            "stackedColumn",
+            "column"
         ],
-        defaultVisualizationType: "table"
-    },
-    {
-        id: "ovc_serv",
-        title: "OVC SERV",
-        defaultLayout: {
-            filter: ["pe"],
-            category: ["ou"],
-            series: ["dx"]
-        },
-        data: [{
-            title: "OVC SERV",
-            filter: (data) => data
-        }],
-        orgUnitConfig: {
-            type: "level",
-            level: 2
-        },
-        allowedVisualizationTypes: [
-            "table",
-            "stackedColumn"
-        ],
-        defaultVisualizationType: "table"
+        defaultVisualizationType: "stackedColumn"
     },
 ]
