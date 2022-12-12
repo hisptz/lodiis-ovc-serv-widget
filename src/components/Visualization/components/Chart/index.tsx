@@ -95,7 +95,18 @@ function useChartOptions(configId: string): Highcharts.Options {
             }
         ],
         series: chartSeries,
-        colors: ["#2f7ed8", "#0d233a", "#8bbc21", "#910000", "#1aadce", "#492970", "#f28f43", "#77a1e5", "#c42525", "#a6c96a"],
+        colors: [
+            "#8bbc21",
+            "#77a1e5",
+            "#f28f43",
+            "#910000",
+            "#a6c96a",
+            "#2f7ed8",
+            "#c42525",
+            "#1aadce",
+            "#492970",
+            "#0d233a",
+        ],
         exporting: {
             buttons: {
                 contextButton: {enabled: false}

@@ -28,7 +28,8 @@ const dataQuery = {
                 `eventDate`,
                 `dataValues[dataElement,value]`,
                 `trackedEntityInstance`,
-                `orgUnit`
+                `orgUnit`,
+                `programStage`
             ]
         })
     }

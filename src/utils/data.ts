@@ -5,6 +5,7 @@ import {ATTRIBUTES, PROGRAM, SERVICE_PROVISION_DATA_ELEMENTS} from "../constants
 import {DateTime, Duration} from "luxon";
 import {asyncify, map} from "async";
 
+
 export interface FilterOptions {
     period: BasePeriod;
     engine: any;
@@ -60,7 +61,6 @@ async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: Enrollmen
             ids: enrollmentIds
         }
     }))?.enrollment?.enrollments;
-
     return enrollments.filter((enrollmentData) => {
         const enrollmentDate = find(enrollmentsWithEnrollmentDate, ['enrollment', enrollmentData.enrollment])?.enrollmentDate;
         if (enrollmentDate) {
@@ -77,7 +77,6 @@ async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: Enrollmen
 
 export async function getFilteredEnrollments(events: Event[], options: FilterOptions,): Promise<EnrollmentData[]> {
     const eventsWithServices = events?.filter(eventHasAtLeastOneService);
-
     const groupedEvents = groupBy(eventsWithServices, 'enrollment');
     const enrollments: EnrollmentData[] = Object.keys(groupedEvents).map((key) => {
         return {
@@ -85,10 +84,10 @@ export async function getFilteredEnrollments(events: Event[], options: FilterOpt
             events: groupedEvents[key]
         }
     })
-    //This removes all enrollments that satisfy first condition grom the enrollments array. The remaining have to be filtered for the second condition;
+
+    //This removes all enrollments that satisfy first condition from the enrollments array. The remaining have to be filtered for the second condition;
     const enrollmentsWithEventsOnBothQuarters = remove(enrollments, (enrollment) => enrollmentHasEventsOnBothQuarters(enrollment, options));
     const enrollmentsWithRegistrationOnLastQuarter = await getEnrollmentWithRegistrationOnLastQuarter(enrollments, options);
-
     return uniqBy([...enrollmentsWithEventsOnBothQuarters, ...enrollmentsWithRegistrationOnLastQuarter], 'enrollment')
 }
 
