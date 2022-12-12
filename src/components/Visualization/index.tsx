@@ -22,7 +22,6 @@ function decamelize(str: string, separator: string): string {
 export function Visualization({configId}: { configId: string }) {
     const type = useRecoilValue(VisualizationType(configId));
 
-
     return (
         <div className="column gap-8 w-100 h-100">
             {['column', 'stackedColumn'].includes(type) && (<Chart configId={configId}/>)}

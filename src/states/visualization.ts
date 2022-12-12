@@ -7,12 +7,13 @@ import {
     VisualizationDefaultConfig,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
-import {find, flatten} from "lodash";
+import {find, flatten, head} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {OVCServData} from "./data";
 import {EngineState} from "./engine";
 import React from "react";
+import {OrganisationUnitLevel} from "@hisptz/dhis2-utils";
 
 const orgUnitQuery = {
     orgUnits: {
@@ -71,6 +72,34 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
         }
     }
 });
+
+
+const orgUnitLevelQuery = {
+    level: {
+        resource: "organisationUnitLevels",
+        params: ({level}: any) => {
+
+            return {
+                filter: [
+                    `level:eq:${level}`
+                ]
+            }
+        }
+    }
+}
+export const OrgUnitLevel = selectorFamily<OrganisationUnitLevel | undefined, string>({
+    key: "org-unit-level",
+    get: (level: string) => async ({get}) => {
+        const engine = get(EngineState);
+
+        const response = await engine.query(orgUnitLevelQuery, {
+            variables: {
+                level
+            }
+        })
+        return head(response?.level?.organisationUnitLevels) as OrganisationUnitLevel
+    }
+})
 
 export const VisualizationConfiguration = atomFamily<VisualizationConfig, string>({
     key: "visualization-config",

@@ -2,6 +2,7 @@ import * as Highcharts from 'highcharts';
 import HighchartsReact from "highcharts-react-official";
 import {useRecoilValue, useSetRecoilState} from "recoil";
 import {
+    OrgUnitState,
     VisualizationConfiguration,
     VisualizationData,
     VisualizationRef,
@@ -10,7 +11,9 @@ import {
 import {getDimensionName, getDimensionValues} from "../CustomDataTable";
 import {find, flatten, head} from "lodash";
 import {Dimension, VisualizationType as VisualizationTypeInterface} from "../../../../interfaces";
-
+import {Suspense, useState} from "react";
+import {SingleSelectField, SingleSelectOption} from '@dhis2/ui'
+import Loader from "../../../Loader";
 
 function getChartType(visualizationType: VisualizationTypeInterface): string {
     switch (visualizationType) {
@@ -23,9 +26,9 @@ function getChartType(visualizationType: VisualizationTypeInterface): string {
     }
 }
 
-function useChartOptions(configId: string): Highcharts.Options {
+function useChartOptions(configId: string, orgUnit?: string): { options: Highcharts.Options } {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData({configId}));
+    const data = useRecoilValue(VisualizationData({configId, orgUnitId: orgUnit}));
     const visualizationType = useRecoilValue(VisualizationType(configId))
     const {layout} = config;
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
@@ -67,8 +70,7 @@ function useChartOptions(configId: string): Highcharts.Options {
 
     const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension);
     const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension);
-
-    return {
+    const options = {
         chart: {
             renderTo: configId,
             type: "column",
@@ -124,11 +126,17 @@ function useChartOptions(configId: string): Highcharts.Options {
                 enabled: true
             }
         }
+    };
+
+    return {
+        options: options as Highcharts.Options,
     }
 }
-export default function Chart({configId}: { configId: string }) {
+
+
+function ChartComponent({configId, orgUnit}: { configId: string; orgUnit?: string }) {
+    const {options} = useChartOptions(configId, orgUnit);
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
-    const options = useChartOptions(configId);
 
     return (
         <HighchartsReact
@@ -143,5 +151,34 @@ export default function Chart({configId}: { configId: string }) {
             options={options}
             ref={chartComponentRef as any}
         />
+    )
+}
+
+export default function Chart({configId}: { configId: string }) {
+    const [orgUnit, setOrgUnit] = useState<string | undefined>();
+    const {orgUnitConfig} = useRecoilValue(VisualizationConfiguration(configId));
+    const orgUnits = useRecoilValue(OrgUnitState({config: orgUnitConfig}));
+
+    return (
+        <div className="column gap-8">
+            <div className="w-100 row end">
+                <div className="w-40">
+                    <SingleSelectField
+                        clearable dense
+                        label="Select organisation unit"
+                        selected={orgUnit}
+                        onChange={({selected}) => setOrgUnit(selected)} filterable>
+                        {
+                            orgUnits.map(({name, id}) => (
+                                <SingleSelectOption key={`${id}-option`} label={name} value={id}/>
+                            ))
+                        }
+                    </SingleSelectField>
+                </div>
+            </div>
+            <Suspense fallback={<Loader/>}>
+                <ChartComponent orgUnit={orgUnit} configId={configId}/>
+            </Suspense>
+        </div>
     );
 }
