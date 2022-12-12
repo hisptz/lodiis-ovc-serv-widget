@@ -87,9 +87,10 @@ const orgUnitLevelQuery = {
         }
     }
 }
-export const OrgUnitLevel = selectorFamily<OrganisationUnitLevel | undefined, string>({
+export const OrgUnitLevel = selectorFamily<OrganisationUnitLevel | undefined, string | undefined>({
     key: "org-unit-level",
-    get: (level: string) => async ({get}) => {
+    get: (level?: string) => async ({get}) => {
+        if (!level) return;
         const engine = get(EngineState);
 
         const response = await engine.query(orgUnitLevelQuery, {
@@ -126,18 +127,20 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-export const VisualizationData = selectorFamily<AnalyticsData[], { configId: string, orgUnitId?: string }>({
+export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string, orgUnitId?: string }>({
     key: "visualization-data",
     get: ({configId, orgUnitId}: { configId: string, orgUnitId?: string }) => ({get}) => {
         const {data, orgUnitConfig} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);
-        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}))
+        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}));
+
+        const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()))
 
         if (!ovcServData) return [];
         if (!period) return [];
 
-        return flatten(data.map(datum => {
+        const sanitizedData = flatten(data.map(datum => {
             const filteredData = datum.filter(ovcServData);
             return ou.map(orgUnit => {
                 const orgUnitData = filteredData.filter(data => data.orgUnit.path.includes(orgUnit.id))?.length;
@@ -148,7 +151,12 @@ export const VisualizationData = selectorFamily<AnalyticsData[], { configId: str
                     dx: datum.title
                 }
             })
-        }))
+        }));
+
+        return {
+            data: sanitizedData,
+            ouDimensionName: orgUnitLevel?.displayName
+        }
 
     }
 })

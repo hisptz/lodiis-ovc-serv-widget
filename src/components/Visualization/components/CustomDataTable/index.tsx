@@ -8,21 +8,21 @@ import React, {Suspense, useState} from "react";
 import Loader from "../../../Loader";
 import {LOWEST_LEVEL} from "../../../../constants";
 
-export function getDimensionName(dimension: Dimension): string {
+export function getDimensionName(dimension: Dimension, dimensionNames?: { ou: string }): string {
     switch (dimension) {
         case "dx":
             return "Number of beneficiaries served";
         case "pe":
             return "Period";
         case "ou":
-            return "Districts"
+            return dimensionNames?.ou ?? "Districts"
     }
 }
 
-function getRowHeader(layout: VisualizationLayout) {
+function getRowHeader(layout: VisualizationLayout, dimensionNames?: { ou: string }) {
     const {category, series} = layout;
-    const categoryNames = category.map(getDimensionName);
-    const seriesNames = series.map(getDimensionName);
+    const categoryNames = category.map((category) => getDimensionName(category, dimensionNames));
+    const seriesNames = series.map(series => getDimensionName(series, dimensionNames));
 
     return [categoryNames.join(', '), seriesNames.join(', ')].join('/');
 }
@@ -40,7 +40,7 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
 
 export default function CustomDataTable({configId, orgUnitId}: { configId: string; orgUnitId?: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData({configId, orgUnitId}));
+    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId, orgUnitId}));
     const ref = useSetRecoilState(VisualizationRef(configId));
     const [expanded, setExpanded] = useState<string | undefined>();
 
@@ -53,17 +53,14 @@ export default function CustomDataTable({configId, orgUnitId}: { configId: strin
         return (row.level as number) < LOWEST_LEVEL;
     });
 
-    const rowHeader = getRowHeader(layout);
+    const rowHeader = getRowHeader(layout, {ou: ouDimensionName ?? ""});
 
     return (
         <DataTable ref={ref}>
             <TableHead>
                 <DataTableRow>
                     {
-                        shouldDrill && (<DataTableColumnHeader/>)
-                    }
-                    {
-                        <DataTableColumnHeader>
+                        <DataTableColumnHeader colSpan={shouldDrill ? 2 : 1}>
                             {rowHeader}
                         </DataTableColumnHeader>
                     }

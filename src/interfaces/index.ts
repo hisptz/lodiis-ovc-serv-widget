@@ -34,6 +34,7 @@ export interface VisualizationLayout {
 export interface OrgUnit {
     name: string;
     id: string;
+    level?: number
 }
 
 export interface OrgUnitConfig {

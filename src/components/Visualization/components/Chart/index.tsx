@@ -28,7 +28,7 @@ function getChartType(visualizationType: VisualizationTypeInterface): string {
 
 function useChartOptions(configId: string, orgUnit?: string): { options: Highcharts.Options } {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const data = useRecoilValue(VisualizationData({configId, orgUnitId: orgUnit}));
+    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId, orgUnitId: orgUnit}));
     const visualizationType = useRecoilValue(VisualizationType(configId))
     const {layout} = config;
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
@@ -68,8 +68,8 @@ function useChartOptions(configId: string, orgUnit?: string): { options: Highcha
         return category.name;
     });
 
-    const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension);
-    const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension);
+    const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension, {ou: ouDimensionName ?? ''});
+    const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension, {ou: ouDimensionName ?? ''});
     const options = {
         chart: {
             renderTo: configId,
