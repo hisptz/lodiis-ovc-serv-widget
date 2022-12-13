@@ -1,4 +1,4 @@
-import {BasePeriod, Enrollment, Event} from "@hisptz/dhis2-utils";
+import {BasePeriod, Enrollment, Event, OrganisationUnit} from "@hisptz/dhis2-utils";
 
 export interface AnalyticsData {
     dx: string;
@@ -34,6 +34,7 @@ export interface VisualizationLayout {
 export interface OrgUnit {
     name: string;
     id: string;
+    level?: number
 }
 
 export interface OrgUnitConfig {
@@ -42,7 +43,8 @@ export interface OrgUnitConfig {
     ous?: {
         name: string;
         id: string
-    }[]
+    }[];
+    orgUnit?: OrganisationUnit
 }
 
 export interface VisualizationDefaultConfig {

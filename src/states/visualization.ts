@@ -7,12 +7,14 @@ import {
     VisualizationDefaultConfig,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
-import {find, flatten} from "lodash";
+import {find, flatten, head, sortBy} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {OVCServData} from "./data";
 import {EngineState} from "./engine";
 import React from "react";
+import {OrganisationUnitLevel} from "@hisptz/dhis2-utils";
+import {UserOrgUnitState} from "./metadata";
 
 const orgUnitQuery = {
     orgUnits: {
@@ -47,22 +49,22 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
     key: "org-unit-state",
     get: ({config, orgUnitId}: { config?: OrgUnitConfig, orgUnitId?: string }) => async ({get}) => {
         const engine = get(EngineState);
+        const {type, ous, level, orgUnit} = config ?? {}
 
-        if (orgUnitId) {
+        if (orgUnitId || orgUnit) {
             const data = await engine.query(drillDownQuery, {
                 variables: {
-                    id: orgUnitId
+                    id: orgUnitId ?? orgUnit?.id
                 }
             })
             return data?.orgUnit?.children ?? []
         }
 
-        const {type, ous, level} = config ?? {}
         if (type === "level") {
             //get level orgUnits by analytics api
             const data = await engine.query(orgUnitQuery, {
                 variables: {
-                    level
+                    level,
                 }
             })
             return data?.orgUnits?.organisationUnits;
@@ -71,6 +73,35 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
         }
     }
 });
+
+
+const orgUnitLevelQuery = {
+    level: {
+        resource: "organisationUnitLevels",
+        params: ({level}: any) => {
+
+            return {
+                filter: [
+                    `level:eq:${level}`
+                ]
+            }
+        }
+    }
+}
+export const OrgUnitLevel = selectorFamily<OrganisationUnitLevel | undefined, string | undefined>({
+    key: "org-unit-level",
+    get: (level?: string) => async ({get}) => {
+        if (!level) return;
+        const engine = get(EngineState);
+
+        const response = await engine.query(orgUnitLevelQuery, {
+            variables: {
+                level
+            }
+        })
+        return head(response?.level?.organisationUnitLevels) as OrganisationUnitLevel
+    }
+})
 
 export const VisualizationConfiguration = atomFamily<VisualizationConfig, string>({
     key: "visualization-config",
@@ -85,11 +116,26 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 data,
                 allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
+
+            const {ou, dataOu} = get(UserOrgUnitState);
+
+            const orgUnit = head(sortBy(dataOu, 'level')) ?? head(sortBy(ou, 'level'))
+
+            console.log({
+                ou,
+                dataOu
+            })
+
+            const orgUnitConfiguration = {
+                ...orgUnitConfig,
+                orgUnit: orgUnit
+            }
+
             return {
                 id,
                 title,
                 data,
-                orgUnitConfig,
+                orgUnitConfig: orgUnitConfiguration,
                 layout: defaultLayout,
                 visualizationType: defaultVisualizationType,
                 allowedVisualizationTypes
@@ -97,18 +143,20 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-export const VisualizationData = selectorFamily<AnalyticsData[], { configId: string, orgUnitId?: string }>({
+export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string, orgUnitId?: string }>({
     key: "visualization-data",
     get: ({configId, orgUnitId}: { configId: string, orgUnitId?: string }) => ({get}) => {
         const {data, orgUnitConfig} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);
-        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}))
+        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}));
+
+        const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()))
 
         if (!ovcServData) return [];
         if (!period) return [];
 
-        return flatten(data.map(datum => {
+        const sanitizedData = flatten(data.map(datum => {
             const filteredData = datum.filter(ovcServData);
             return ou.map(orgUnit => {
                 const orgUnitData = filteredData.filter(data => data.orgUnit.path.includes(orgUnit.id))?.length;
@@ -119,7 +167,12 @@ export const VisualizationData = selectorFamily<AnalyticsData[], { configId: str
                     dx: datum.title
                 }
             })
-        }))
+        }));
+
+        return {
+            data: sanitizedData,
+            ouDimensionName: orgUnitLevel?.displayName
+        } as any;
 
     }
 })
