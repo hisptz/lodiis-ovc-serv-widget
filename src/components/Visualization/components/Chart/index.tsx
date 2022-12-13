@@ -34,6 +34,9 @@ function useChartOptions(configId: string, orgUnit?: string): { options: Highcha
     const {layout} = config;
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
     const chartType = getChartType(visualizationType);
+
+    console.log(data)
+
     const chartSeries: any = flatten(layout.series.map((dimension) => {
         const dimensionItem = getDimensionValues(dimension, data);
         return dimensionItem.map((item) => {
@@ -143,7 +146,7 @@ function ChartComponent({configId, orgUnit}: { configId: string; orgUnit?: strin
         <HighchartsReact
             immutable
             containerProps={{
-                id: configId,
+                id: `${configId}-${orgUnit}`,
                 style: {
                     height: "100%"
                 }
@@ -161,10 +164,8 @@ export default function Chart({configId}: { configId: string }) {
     const orgUnits = useRecoilValue(OrgUnitState({config: orgUnitConfig}));
     const ouLevel = head(orgUnits)?.level ?? 0;
 
-    console.log(ouLevel)
-
     return (
-        <div className="column gap-8">
+        <div className="column gap-8 w-100 h-100">
             {
                 ouLevel < LOWEST_LEVEL && (<div className="w-100 row end">
                     <div className="w-40">
@@ -182,9 +183,11 @@ export default function Chart({configId}: { configId: string }) {
                     </div>
                 </div>)
             }
-            <Suspense fallback={<Loader/>}>
-                <ChartComponent orgUnit={orgUnit} configId={configId}/>
-            </Suspense>
+            <div className="w-100 h-100">
+                <Suspense fallback={<Loader/>}>
+                    <ChartComponent orgUnit={orgUnit} configId={configId}/>
+                </Suspense>
+            </div>
         </div>
     );
 }

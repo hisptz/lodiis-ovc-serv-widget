@@ -7,7 +7,7 @@ import {
     VisualizationDefaultConfig,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
-import {find, flatten, head, sortBy} from "lodash";
+import {find, flatten, head, isEmpty, sortBy} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {OVCServData} from "./data";
@@ -39,6 +39,7 @@ const drillDownQuery = {
             fields: [
                 'id',
                 'level',
+                'displayName~rename(name)',
                 'children[id,displayName~rename(name),level]'
             ]
         }
@@ -49,9 +50,10 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
     key: "org-unit-state",
     get: ({config, orgUnitId}: { config?: OrgUnitConfig, orgUnitId?: string }) => async ({get}) => {
         const engine = get(EngineState);
-        const {type, ous, level, orgUnit} = config ?? {}
+        const {orgUnit} = config ?? {}
 
-        if (orgUnitId || orgUnit) {
+        if (!isEmpty(orgUnitId)) {
+            console.log("Passing by here?")
             const data = await engine.query(drillDownQuery, {
                 variables: {
                     id: orgUnitId ?? orgUnit?.id
@@ -59,18 +61,15 @@ export const OrgUnitState = selectorFamily<OrgUnit[], any>({
             })
             return data?.orgUnit?.children ?? []
         }
-
-        if (type === "level") {
-            //get level orgUnits by analytics api
-            const data = await engine.query(orgUnitQuery, {
+        if (!isEmpty(orgUnit)) {
+            const data = await engine.query(drillDownQuery, {
                 variables: {
-                    level,
+                    id: orgUnit?.id
                 }
             })
-            return data?.orgUnits?.organisationUnits;
-        } else {
-            return ous ?? [];
+            return [...(data?.orgUnit?.children ?? [])]
         }
+
     }
 });
 
@@ -121,11 +120,6 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
 
             const orgUnit = head(sortBy(dataOu, 'level')) ?? head(sortBy(ou, 'level'))
 
-            console.log({
-                ou,
-                dataOu
-            })
-
             const orgUnitConfiguration = {
                 ...orgUnitConfig,
                 orgUnit: orgUnit
@@ -151,7 +145,14 @@ export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimen
         const ovcServData = get(OVCServData);
         const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}));
 
-        const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()))
+        const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()));
+
+        console.log({
+            configId,
+            orgUnitId,
+            ou,
+            orgUnitLevel
+        })
 
         if (!ovcServData) return [];
         if (!period) return [];
