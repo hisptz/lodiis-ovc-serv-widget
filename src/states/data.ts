@@ -1,6 +1,6 @@
 import {selector} from "recoil";
 import {OvcServData} from "../interfaces";
-import {DISTRICT_LEVEL, PROGRAM, SERVICE_PROVISION_PROGRAM_STAGE} from "../constants";
+import {PROGRAM, SERVICE_PROVISION_PROGRAM_STAGE} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {EngineState} from "./engine";
 import {Event} from "@hisptz/dhis2-utils";
@@ -16,8 +16,7 @@ const dataQuery = {
             program: PROGRAM,
             startDate,
             endDate,
-            ouMode: `DESCENDANTS`,
-            ou: `LEVEL-${DISTRICT_LEVEL}`,
+            ouMode: `ACCESSIBLE`,
             programStage: SERVICE_PROVISION_PROGRAM_STAGE,
             totalPages: true,
             page,
@@ -91,4 +90,7 @@ export const OVCServData = selector<OvcServData[] | undefined>({
         return await getAllData();
 
     }
-})
+});
+
+
+

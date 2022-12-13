@@ -14,6 +14,7 @@ import {Dimension, VisualizationType as VisualizationTypeInterface} from "../../
 import {Suspense, useState} from "react";
 import {SingleSelectField, SingleSelectOption} from '@dhis2/ui'
 import Loader from "../../../Loader";
+import {LOWEST_LEVEL} from "../../../../constants";
 
 function getChartType(visualizationType: VisualizationTypeInterface): string {
     switch (visualizationType) {
@@ -158,24 +159,29 @@ export default function Chart({configId}: { configId: string }) {
     const [orgUnit, setOrgUnit] = useState<string | undefined>();
     const {orgUnitConfig} = useRecoilValue(VisualizationConfiguration(configId));
     const orgUnits = useRecoilValue(OrgUnitState({config: orgUnitConfig}));
+    const ouLevel = head(orgUnits)?.level ?? 0;
+
+    console.log(ouLevel)
 
     return (
         <div className="column gap-8">
-            <div className="w-100 row end">
-                <div className="w-40">
-                    <SingleSelectField
-                        clearable dense
-                        label="Select organisation unit"
-                        selected={orgUnit}
-                        onChange={({selected}) => setOrgUnit(selected)} filterable>
-                        {
-                            orgUnits.map(({name, id}) => (
-                                <SingleSelectOption key={`${id}-option`} label={name} value={id}/>
-                            ))
-                        }
-                    </SingleSelectField>
-                </div>
-            </div>
+            {
+                ouLevel < LOWEST_LEVEL && (<div className="w-100 row end">
+                    <div className="w-40">
+                        <SingleSelectField
+                            clearable dense
+                            label="Select organisation unit"
+                            selected={orgUnit}
+                            onChange={({selected}) => setOrgUnit(selected)} filterable>
+                            {
+                                orgUnits.map(({name, id}) => (
+                                    <SingleSelectOption key={`${id}-option`} label={name} value={id}/>
+                                ))
+                            }
+                        </SingleSelectField>
+                    </div>
+                </div>)
+            }
             <Suspense fallback={<Loader/>}>
                 <ChartComponent orgUnit={orgUnit} configId={configId}/>
             </Suspense>

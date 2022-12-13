@@ -103,6 +103,7 @@ const teiQuery = {
                     'enrollments[enrollment,enrollmentDate,orgUnit]'
                 ],
                 program: PROGRAM,
+                ouMode: 'ACCESSIBLE'
             }
         }
     },
@@ -160,7 +161,6 @@ export async function transformEvents(enrollments: EnrollmentData[], engine: any
         })
         const data = teiData?.tei?.trackedEntityInstances;
         const orgUnits = teiData?.ou?.organisationUnits;
-
         return enrollmentBatch.map((enrollment) => {
             const tei = find(data, (tei) => head(tei?.enrollments as Enrollment[])?.enrollment === enrollment.enrollment);
             const orgUnit = find(orgUnits, (ou) => ou.id === head(enrollment.events)?.orgUnit)
