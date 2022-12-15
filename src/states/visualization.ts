@@ -126,9 +126,9 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string, orgUnitId?: string }>({
+export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string }>({
     key: "visualization-data",
-    get: ({configId}: { configId: string, orgUnitId?: string }) => ({get}) => {
+    get: ({configId}: { configId: string, }) => ({get}) => {
         const {data} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);

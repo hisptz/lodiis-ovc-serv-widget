@@ -25,9 +25,9 @@ function getChartType(visualizationType: VisualizationTypeInterface): string {
     }
 }
 
-function useChartOptions(configId: string, orgUnit?: string): { options: Highcharts.Options } {
+function useChartOptions(configId: string): { options: Highcharts.Options } {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId, orgUnitId: orgUnit}));
+    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId}));
     const visualizationType = useRecoilValue(VisualizationType(configId))
     const {layout} = config;
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
@@ -136,14 +136,14 @@ function useChartOptions(configId: string, orgUnit?: string): { options: Highcha
 
 function ChartComponent({configId}: { configId: string }) {
     const orgUnit = useRecoilValue(OrgUnitFilterState)
-    const {options} = useChartOptions(configId, orgUnit?.id);
+    const {options} = useChartOptions(configId);
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
 
     return (
         <HighchartsReact
             immutable
             containerProps={{
-                id: `${configId}-${orgUnit}`,
+                id: `${configId}-${orgUnit?.id}`,
                 style: {
                     height: "100%"
                 }
