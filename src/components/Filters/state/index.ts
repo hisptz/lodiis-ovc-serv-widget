@@ -1,37 +1,35 @@
-import {atom, DefaultValue, selector,} from "recoil";
-import {BasePeriod, PeriodUtility} from "@hisptz/dhis2-utils";
+import {atom, selector,} from "recoil";
+import {BasePeriod, OrganisationUnit, PeriodUtility} from "@hisptz/dhis2-utils";
+import {UserOrgUnitState} from "../../../states/metadata";
+import {head, sortBy} from "lodash";
 
 
 const DEFAULT_PERIOD = `${new Date().getFullYear()}S1`;
 
-export const FilterState = atom<{ period?: string }>({
-    key: "filter-state",
-    default: {
-        period: DEFAULT_PERIOD
+export const OrgUnitFilterState = atom<OrganisationUnit | undefined>({
+    key: "org-unit-filter",
+    default: selector({
+        key: "org-unit-filter-default",
+        get: ({get}) => {
+            const {ou, dataOu} = get(UserOrgUnitState);
+            return head(sortBy(dataOu, 'level')) ?? head(sortBy(ou, 'level'));
+        }
+    })
+});
+export const AccessibleOrgUnits = selector<OrganisationUnit[] | undefined>({
+    key: "accessible-orgUnits",
+    get: ({get}) => {
+        const {ou, dataOu} = get(UserOrgUnitState);
+        const orgUnits = [...(dataOu ?? ou)];
+        const children = orgUnits.map(({children}) => children).flat();
+
+        return [
+            ...orgUnits,
+            ...children
+        ]
     }
 })
-
-export const PeriodFilterState = selector<BasePeriod | undefined>({
+export const PeriodFilterState = atom<BasePeriod | undefined>({
     key: "period-filter-state",
-    get: ({get}) => {
-        const periodId = get(FilterState)?.period;
-        if (!periodId) return;
-        return PeriodUtility.getPeriodById(periodId);
-    },
-    set: ({set}, value) => {
-        set(FilterState, (prevValue) => {
-
-            if (value instanceof DefaultValue) {
-                return {
-                    ...prevValue,
-                    period: undefined
-                }
-            }
-
-            return {
-                ...(prevValue),
-                period: value?.id
-            }
-        })
-    },
+    default: PeriodUtility.getPeriodById(DEFAULT_PERIOD),
 })
