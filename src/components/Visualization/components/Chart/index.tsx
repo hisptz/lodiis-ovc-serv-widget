@@ -112,6 +112,11 @@ function useChartOptions(configId: string): { options: Highcharts.Options } {
         exporting: {
             buttons: {
                 contextButton: {enabled: false}
+            },
+            chartOptions: {
+                title: {
+                    text: config.title
+                }
             }
         },
         xAxis: {
@@ -132,7 +137,6 @@ function useChartOptions(configId: string): { options: Highcharts.Options } {
         options: options as Highcharts.Options,
     }
 }
-
 
 function ChartComponent({configId}: { configId: string }) {
     const orgUnit = useRecoilValue(OrgUnitFilterState)
