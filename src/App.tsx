@@ -11,7 +11,6 @@ HighChartsExport(HighCharts);
 
 
 function App() {
-
     const engine = useDataEngine();
     const initState = (snapshot: MutableSnapshot) => {
         snapshot.set(EngineState, engine);
