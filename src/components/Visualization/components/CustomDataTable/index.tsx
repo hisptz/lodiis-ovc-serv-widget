@@ -4,9 +4,7 @@ import {AnalyticsData, Dimension, VisualizationLayout} from "../../../../interfa
 import {find, head, uniqBy} from "lodash";
 import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody, TableHead} from "@dhis2/ui"
 import classes from "./CustomDataTable.module.css"
-import React, {Suspense, useState} from "react";
-import Loader from "../../../Loader";
-import {LOWEST_LEVEL} from "../../../../constants";
+import React from "react";
 
 export function getDimensionName(dimension: Dimension, dimensionNames?: { ou: string }): string {
     switch (dimension) {
@@ -38,20 +36,13 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
     }
 }
 
-export default function CustomDataTable({configId, orgUnitId}: { configId: string; orgUnitId?: string }) {
+export default function CustomDataTable({configId}: { configId: string; }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId, orgUnitId}));
+    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId}));
     const ref = useSetRecoilState(VisualizationRef(configId));
-    const [expanded, setExpanded] = useState<string | undefined>();
-
     const {layout} = config;
     const columns = getDimensionValues(head(layout.series) as Dimension, data);
     const rows = getDimensionValues(head(layout.category) as Dimension, data);
-
-
-    const shouldDrill = rows.every((row) => {
-        return (row.level as number) < LOWEST_LEVEL;
-    });
 
     const rowHeader = getRowHeader(layout, {ou: ouDimensionName ?? ""});
 
@@ -60,7 +51,7 @@ export default function CustomDataTable({configId, orgUnitId}: { configId: strin
             <TableHead>
                 <DataTableRow>
                     {
-                        <DataTableColumnHeader colSpan={shouldDrill ? 2 : 1}>
+                        <DataTableColumnHeader>
                             {rowHeader}
                         </DataTableColumnHeader>
                     }
@@ -76,18 +67,7 @@ export default function CustomDataTable({configId, orgUnitId}: { configId: strin
                     rows.map((row) => {
                         return (
                             <DataTableRow
-                                expanded={expanded === row.id}
-                                onExpandToggle={() => {
-                                    if (expanded === row.id) {
-                                        setExpanded(undefined);
-                                    } else {
-                                        setExpanded(row.id)
-                                    }
-                                }}
                                 key={`${row.id}-row`}
-                                expandableContent={shouldDrill && <Suspense fallback={<Loader/>}>
-                                    <CustomDataTable configId={configId} orgUnitId={row.id}/>
-                                </Suspense>}
                             >
                                 <DataTableCell bordered>
                                     {row.name}

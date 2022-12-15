@@ -10,8 +10,8 @@ const userQuery = {
             fields: [
                 'id',
                 'displayName',
-                'organisationUnits[id,level]',
-                'dataViewOrganisationUnits[id,level]'
+                'organisationUnits[id,level,displayName~rename(name),children[id,displayName~rename(name),level]]',
+                'dataViewOrganisationUnits[id,level,displayName~rename(name),children[id,displayName~rename(name),level]]'
             ]
         }
     }

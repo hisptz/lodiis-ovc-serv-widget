@@ -8,9 +8,17 @@
     width: 50%;
 }
 
+.orgUnitContainer {
+    width: 25%;
+}
+
 
 @media screen and (max-width: 768px) {
     .periodContainer {
         width: 100%;
+    }
+
+    .orgUnitContainer {
+        width: 50%;
     }
 }

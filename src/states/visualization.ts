@@ -1,20 +1,18 @@
-import {atomFamily, selectorFamily} from "recoil";
+import {atomFamily, selector, selectorFamily} from "recoil";
 import {
     AnalyticsData,
     OrgUnit,
-    OrgUnitConfig,
     VisualizationConfig,
     VisualizationDefaultConfig,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
-import {find, flatten, head, isEmpty, sortBy} from "lodash";
+import {find, flatten, head} from "lodash";
 import {VISUALIZATIONS} from "../constants";
-import {PeriodFilterState} from "../components/Filters/state";
+import {OrgUnitFilterState, PeriodFilterState} from "../components/Filters/state";
 import {OVCServData} from "./data";
 import {EngineState} from "./engine";
 import React from "react";
 import {OrganisationUnitLevel} from "@hisptz/dhis2-utils";
-import {UserOrgUnitState} from "./metadata";
 
 const orgUnitQuery = {
     orgUnits: {
@@ -46,29 +44,22 @@ const drillDownQuery = {
     }
 }
 
-export const OrgUnitState = selectorFamily<OrgUnit[], any>({
+export const OrgUnitState = selector<OrgUnit[]>({
     key: "org-unit-state",
-    get: ({config, orgUnitId}: { config?: OrgUnitConfig, orgUnitId?: string }) => async ({get}) => {
+    get: async ({get}) => {
         const engine = get(EngineState);
-        const {orgUnit} = config ?? {}
+        const orgUnit = get(OrgUnitFilterState);
 
-        if (!isEmpty(orgUnitId)) {
-            console.log("Passing by here?")
-            const data = await engine.query(drillDownQuery, {
-                variables: {
-                    id: orgUnitId ?? orgUnit?.id
-                }
-            })
-            return data?.orgUnit?.children ?? []
+        if (!orgUnit) {
+            return [];
         }
-        if (!isEmpty(orgUnit)) {
-            const data = await engine.query(drillDownQuery, {
-                variables: {
-                    id: orgUnit?.id
-                }
-            })
-            return [...(data?.orgUnit?.children ?? [])]
-        }
+
+        const data = await engine.query(drillDownQuery, {
+            variables: {
+                id: orgUnit?.id
+            }
+        })
+        return [...(data?.orgUnit?.children ?? [])]
 
     }
 });
@@ -116,9 +107,7 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
 
-            const {ou, dataOu} = get(UserOrgUnitState);
-
-            const orgUnit = head(sortBy(dataOu, 'level')) ?? head(sortBy(ou, 'level'))
+            const orgUnit = get(OrgUnitFilterState);
 
             const orgUnitConfiguration = {
                 ...orgUnitConfig,
@@ -137,22 +126,16 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string, orgUnitId?: string }>({
+export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string }>({
     key: "visualization-data",
-    get: ({configId, orgUnitId}: { configId: string, orgUnitId?: string }) => ({get}) => {
-        const {data, orgUnitConfig} = get(VisualizationConfiguration(configId))
+    get: ({configId}: { configId: string, }) => ({get}) => {
+        const {data} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);
-        const ou = get(OrgUnitState({orgUnitId, config: orgUnitConfig}));
+        const ou = get(OrgUnitState);
 
         const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()));
 
-        console.log({
-            configId,
-            orgUnitId,
-            ou,
-            orgUnitLevel
-        })
 
         if (!ovcServData) return [];
         if (!period) return [];

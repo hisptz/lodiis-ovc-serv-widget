@@ -2,7 +2,6 @@ import * as Highcharts from 'highcharts';
 import HighchartsReact from "highcharts-react-official";
 import {useRecoilValue, useSetRecoilState} from "recoil";
 import {
-    OrgUnitState,
     VisualizationConfiguration,
     VisualizationData,
     VisualizationRef,
@@ -11,10 +10,9 @@ import {
 import {getDimensionName, getDimensionValues} from "../CustomDataTable";
 import {find, flatten, head} from "lodash";
 import {Dimension, VisualizationType as VisualizationTypeInterface} from "../../../../interfaces";
-import {Suspense, useState} from "react";
-import {SingleSelectField, SingleSelectOption} from '@dhis2/ui'
+import {Suspense} from "react";
 import Loader from "../../../Loader";
-import {LOWEST_LEVEL} from "../../../../constants";
+import {OrgUnitFilterState} from "../../../Filters/state";
 
 function getChartType(visualizationType: VisualizationTypeInterface): string {
     switch (visualizationType) {
@@ -27,15 +25,13 @@ function getChartType(visualizationType: VisualizationTypeInterface): string {
     }
 }
 
-function useChartOptions(configId: string, orgUnit?: string): { options: Highcharts.Options } {
+function useChartOptions(configId: string): { options: Highcharts.Options } {
     const config = useRecoilValue(VisualizationConfiguration(configId));
-    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId, orgUnitId: orgUnit}));
+    const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId}));
     const visualizationType = useRecoilValue(VisualizationType(configId))
     const {layout} = config;
     const categories = getDimensionValues(head(layout.category) as Dimension, data);
     const chartType = getChartType(visualizationType);
-
-    console.log(data)
 
     const chartSeries: any = flatten(layout.series.map((dimension) => {
         const dimensionItem = getDimensionValues(dimension, data);
@@ -138,15 +134,16 @@ function useChartOptions(configId: string, orgUnit?: string): { options: Highcha
 }
 
 
-function ChartComponent({configId, orgUnit}: { configId: string; orgUnit?: string }) {
-    const {options} = useChartOptions(configId, orgUnit);
+function ChartComponent({configId}: { configId: string }) {
+    const orgUnit = useRecoilValue(OrgUnitFilterState)
+    const {options} = useChartOptions(configId);
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
 
     return (
         <HighchartsReact
             immutable
             containerProps={{
-                id: `${configId}-${orgUnit}`,
+                id: `${configId}-${orgUnit?.id}`,
                 style: {
                     height: "100%"
                 }
@@ -159,33 +156,11 @@ function ChartComponent({configId, orgUnit}: { configId: string; orgUnit?: strin
 }
 
 export default function Chart({configId}: { configId: string }) {
-    const [orgUnit, setOrgUnit] = useState<string | undefined>();
-    const {orgUnitConfig} = useRecoilValue(VisualizationConfiguration(configId));
-    const orgUnits = useRecoilValue(OrgUnitState({config: orgUnitConfig}));
-    const ouLevel = head(orgUnits)?.level ?? 0;
-
     return (
         <div className="column gap-8 w-100 h-100">
-            {
-                ouLevel < LOWEST_LEVEL && (<div className="w-100 row end">
-                    <div className="w-40">
-                        <SingleSelectField
-                            clearable dense
-                            label="Select organisation unit"
-                            selected={orgUnit}
-                            onChange={({selected}) => setOrgUnit(selected)} filterable>
-                            {
-                                orgUnits.map(({name, id}) => (
-                                    <SingleSelectOption key={`${id}-option`} label={name} value={id}/>
-                                ))
-                            }
-                        </SingleSelectField>
-                    </div>
-                </div>)
-            }
             <div className="w-100 h-100">
                 <Suspense fallback={<Loader/>}>
-                    <ChartComponent orgUnit={orgUnit} configId={configId}/>
+                    <ChartComponent configId={configId}/>
                 </Suspense>
             </div>
         </div>
