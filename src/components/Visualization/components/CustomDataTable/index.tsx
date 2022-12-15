@@ -36,7 +36,7 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
     }
 }
 
-export default function CustomDataTable({configId, orgUnitId}: { configId: string; orgUnitId?: string }) {
+export default function CustomDataTable({configId}: { configId: string; }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
     const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId}));
     const ref = useSetRecoilState(VisualizationRef(configId));
