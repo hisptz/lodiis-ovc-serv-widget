@@ -138,7 +138,7 @@ function getDataFromAnalytics(analytics: Analytics): Record<string, any>[] {
     }) ?? []
 }
 
-export const AnalyticsData = selectorFamily<Record<string, any>[], AnalyticsParams>({
+export const AnalyticsData = selectorFamily<Record<string, any>[], any>({
     key: "analytics-data",
     get: (config: AnalyticsParams) => async ({get}) => {
         const engine = get(EngineState);
