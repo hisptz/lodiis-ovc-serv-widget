@@ -7,7 +7,7 @@ import {
     VisualizationLayout,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
-import {find, flatten, head} from "lodash";
+import {find, flatten, head, sortBy} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {OrgUnitFilterState, PeriodFilterState} from "../components/Filters/state";
 import {AnalyticsData, AnalyticsParams, OVCServData} from "./data";
@@ -60,7 +60,7 @@ export const OrgUnitState = selector<OrgUnit[]>({
                 id: orgUnit?.id
             }
         })
-        return [...(data?.orgUnit?.children ?? [])]
+        return sortBy([...(data?.orgUnit?.children ?? [])], 'name')
 
     }
 });
