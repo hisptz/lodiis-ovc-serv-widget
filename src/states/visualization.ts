@@ -1,15 +1,16 @@
 import {atomFamily, selector, selectorFamily} from "recoil";
 import {
-    AnalyticsData,
+    AnalyticsData as AnalyticsDataInterface,
     OrgUnit,
     VisualizationConfig,
     VisualizationDefaultConfig,
+    VisualizationLayout,
     VisualizationType as VisualizationTypeInterface
 } from "../interfaces";
 import {find, flatten, head} from "lodash";
 import {VISUALIZATIONS} from "../constants";
 import {OrgUnitFilterState, PeriodFilterState} from "../components/Filters/state";
-import {OVCServData} from "./data";
+import {AnalyticsData, AnalyticsParams, OVCServData} from "./data";
 import {EngineState} from "./engine";
 import React from "react";
 import {OrganisationUnitLevel} from "@hisptz/dhis2-utils";
@@ -104,6 +105,7 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 defaultVisualizationType,
                 orgUnitConfig,
                 data,
+                type,
                 allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
 
@@ -118,6 +120,7 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 id,
                 title,
                 data,
+                type,
                 orgUnitConfig: orgUnitConfiguration,
                 layout: defaultLayout,
                 visualizationType: defaultVisualizationType,
@@ -126,22 +129,70 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
         }
     })
 })
-export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimensionName: string | undefined }, { configId: string }>({
+
+function getAnalyticsConfig(data, layout: VisualizationLayout, {
+    periods,
+    orgUnits
+}: { periods: string[], orgUnits: string[] }): AnalyticsParams {
+    const dimensionValues = {
+        dx: data.map(({dx}) => dx),
+        pe: periods,
+        ou: orgUnits
+    }
+
+    const filters = layout.filter.map((dimension) => {
+        return {
+            key: dimension,
+            value: dimensionValues[dimension]
+        }
+    });
+    const dimensions = [...layout.category, ...layout.series].map((dimension) => {
+        return {
+            key: dimension,
+            value: dimensionValues[dimension]
+        }
+    });
+
+    return {
+        dimensions,
+        filters
+    }
+}
+
+export const VisualizationData = selectorFamily<{ data: AnalyticsDataInterface[], ouDimensionName: string | undefined }, { configId: string }>({
     key: "visualization-data",
     get: ({configId}: { configId: string, }) => ({get}) => {
-        const {data} = get(VisualizationConfiguration(configId))
+        const {data, type, layout} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
         const ovcServData = get(OVCServData);
         const ou = get(OrgUnitState);
-
         const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()));
 
-
-        if (!ovcServData) return [];
         if (!period) return [];
 
+        if (type === "Analytics") {
+            const config = getAnalyticsConfig(data, layout, {periods: [period?.id], orgUnits: ou.map(({id}) => id)});
+            const analyticsData = get(AnalyticsData(config));
+            const chartData = ou.map(orgUnit => {
+                const orgUnitData = analyticsData.find(datum => datum.ou === orgUnit.id);
+                return data.map((datum) => {
+                    return {
+                        ou: orgUnit,
+                        value: parseFloat(orgUnitData?.value ?? '0') ?? 0,
+                        pe: period,
+                        dx: datum.title
+                    }
+                })
+            }).flat()
+            return {
+                data: chartData,
+                ouDimensionName: orgUnitLevel?.displayName
+            }
+        }
+        if (!ovcServData) return [];
+
         const sanitizedData = flatten(data.map(datum => {
-            const filteredData = datum.filter(ovcServData);
+            const filteredData = datum.filter ? datum.filter(ovcServData) : ovcServData;
             return ou.map(orgUnit => {
                 const orgUnitData = filteredData.filter(data => data.orgUnit.path.includes(orgUnit.id))?.length;
                 return {
@@ -152,6 +203,8 @@ export const VisualizationData = selectorFamily<{ data: AnalyticsData[], ouDimen
                 }
             })
         }));
+
+        console.log(sanitizedData)
 
         return {
             data: sanitizedData,
