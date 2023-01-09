@@ -50,12 +50,14 @@ export interface OrgUnitConfig {
 export interface VisualizationDefaultConfig {
     id: string;
     title: string;
+    type?: "Analytics" | "Data";
     defaultVisualizationType: VisualizationType;
     allowedVisualizationTypes: VisualizationType[];
     defaultLayout: VisualizationLayout;
     data: {
         title: string;
-        filter: (data: OvcServData[]) => OvcServData[]
+        filter?: (data: OvcServData[]) => OvcServData[];
+        dx?: string
     }[],
     orgUnitConfig: OrgUnitConfig
 }
@@ -63,12 +65,13 @@ export interface VisualizationDefaultConfig {
 export interface VisualizationConfig {
     id: string;
     title: string;
+    type?: "Analytics" | "Data";
     visualizationType: VisualizationType,
     orgUnitConfig: OrgUnitConfig
     allowedVisualizationTypes: VisualizationType[];
     layout: VisualizationLayout;
     data: {
         title: string;
-        filter: (data: OvcServData[]) => OvcServData[]
+        filter?: (data: OvcServData[]) => OvcServData[]
     }[]
 }

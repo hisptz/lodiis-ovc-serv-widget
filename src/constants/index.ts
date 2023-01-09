@@ -6,6 +6,8 @@ export const SERVICE_PROVISION_PROGRAM_STAGE = "CHFwighOquA";
 export const DISTRICT_LEVEL = "2";
 export const LOWEST_LEVEL = 3;
 
+export const OVC_ENROLLMENT_PROGRAM_INDICATOR = "iGqe7b1PpBo";
+
 export const VULNERABILITY_CRITERIA = [
     'Child of a sex worker (FSW)',
     'Child exposed/experiencing violence and abuse (Survivors of Vac)',
@@ -59,6 +61,30 @@ export const SERVICE_PROVISION_DATA_ELEMENTS = [
 
 
 export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
+    {
+        id: "ovc_enrollment",
+        title: "OVC Enrollment",
+        defaultLayout: {
+            filter: ["pe"],
+            category: ["ou"],
+            series: ["dx"]
+        },
+        type: "Analytics",
+        data: [{
+            title: "OVC Enrollments",
+            dx: OVC_ENROLLMENT_PROGRAM_INDICATOR
+        }],
+        orgUnitConfig: {
+            type: "level",
+            level: 2
+        },
+        allowedVisualizationTypes: [
+            "table",
+            "stackedColumn",
+            "column"
+        ],
+        defaultVisualizationType: "stackedColumn"
+    },
     {
         id: "ovc_serv",
         title: "OVC SERV",
