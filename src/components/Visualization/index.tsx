@@ -9,6 +9,7 @@ import {utils as xlsx, writeFile} from "xlsx";
 import {PeriodFilterState} from "../Filters/state";
 import {ErrorBoundary} from "react-error-boundary";
 import ErrorFallback from "../Error";
+import {useElementSize} from "usehooks-ts";
 
 function decamelize(str: string, separator: string): string {
     separator = typeof separator === 'undefined' ? '_' : separator;
@@ -21,11 +22,12 @@ function decamelize(str: string, separator: string): string {
 
 export function Visualization({configId}: { configId: string }) {
     const type = useRecoilValue(VisualizationType(configId));
+    const [ref, {height}] = useElementSize()
 
     return (
-        <div className="column gap-8 w-100 h-100">
+        <div ref={ref} className="column gap-8 w-100 h-100">
             {['column', 'stackedColumn'].includes(type) && (<Chart configId={configId}/>)}
-            {type === "table" && (<CustomDataTable configId={configId}/>)}
+            {type === "table" && (<CustomDataTable height={`${height}px`} configId={configId}/>)}
         </div>
     )
 }

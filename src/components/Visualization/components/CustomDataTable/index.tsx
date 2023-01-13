@@ -36,28 +36,28 @@ export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]):
     }
 }
 
-export default function CustomDataTable({configId}: { configId: string; }) {
+export default function CustomDataTable({configId, height}: { configId: string; height: string }) {
     const config = useRecoilValue(VisualizationConfiguration(configId));
     const {data, ouDimensionName} = useRecoilValue(VisualizationData({configId}));
     const ref = useSetRecoilState(VisualizationRef(configId));
-    const {layout} = config;
+    const {layout} = config ?? {};
     const columns = getDimensionValues(head(layout.series) as Dimension, data);
     const rows = getDimensionValues(head(layout.category) as Dimension, data);
 
     const rowHeader = getRowHeader(layout, {...(config.dimensionNames ?? {}), ou: ouDimensionName ?? ""});
 
     return (
-        <DataTable ref={ref}>
+        <DataTable scrollHeight={height} ref={ref}>
             <TableHead>
                 <DataTableRow>
                     {
-                        <DataTableColumnHeader>
+                        <DataTableColumnHeader fixed top={"0"}>
                             {rowHeader}
                         </DataTableColumnHeader>
                     }
                     {
                         columns.map(({id, name}) => (
-                            <DataTableColumnHeader className={classes['columnHeader']} align="center"
+                            <DataTableColumnHeader fixed top={"0"} className={classes['columnHeader']} align="center"
                                                    key={`${id}-column-header`}>{name}</DataTableColumnHeader>))
                     }
                 </DataTableRow>
