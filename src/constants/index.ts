@@ -57,6 +57,7 @@ export const SERVICE_PROVISION_DATA_ELEMENTS = [
     'DoU7AeHDsUs',
     'QnFYeBNZlbf',
     'eqhzeRBMftZ',
+    'GImA3HB9YK5'
 ]
 
 
@@ -80,10 +81,9 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn",
             "column"
         ],
-        defaultVisualizationType: "stackedColumn"
+        defaultVisualizationType: "column"
     },
     {
         id: "ovc_serv",
@@ -103,10 +103,9 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
         },
         allowedVisualizationTypes: [
             "table",
-            "stackedColumn",
             "column"
         ],
-        defaultVisualizationType: "stackedColumn"
+        defaultVisualizationType: "column"
     },
     {
         id: "ovc_serv_by_sex",
