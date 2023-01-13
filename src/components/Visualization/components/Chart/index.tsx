@@ -68,8 +68,14 @@ function useChartOptions(configId: string): { options: Highcharts.Options } {
         return category.name;
     });
 
-    const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension, {ou: ouDimensionName ?? ''});
-    const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension, {ou: ouDimensionName ?? ''});
+    const categoryDimensionTitle = getDimensionName(head(layout.category) as Dimension, {
+        ...(config.dimensionNames ?? {}),
+        ou: ouDimensionName ?? ""
+    });
+    const seriesDimensionTitle = getDimensionName(head(layout.series) as Dimension, {
+        ...(config.dimensionNames ?? {}),
+        ou: ouDimensionName ?? ""
+    });
     const options = {
         chart: {
             renderTo: configId,

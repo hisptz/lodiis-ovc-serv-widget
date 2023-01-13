@@ -83,7 +83,10 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
             "table",
             "column"
         ],
-        defaultVisualizationType: "column"
+        defaultVisualizationType: "column",
+        dimensionNames: {
+            dx: "Number of beneficiaries enrolled"
+        }
     },
     {
         id: "ovc_serv",
@@ -105,7 +108,7 @@ export const VISUALIZATIONS: VisualizationDefaultConfig[] = [
             "table",
             "column"
         ],
-        defaultVisualizationType: "column"
+        defaultVisualizationType: "column",
     },
     {
         id: "ovc_serv_by_sex",

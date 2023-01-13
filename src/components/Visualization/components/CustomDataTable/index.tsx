@@ -6,12 +6,12 @@ import {DataTable, DataTableCell, DataTableColumnHeader, DataTableRow, TableBody
 import classes from "./CustomDataTable.module.css"
 import React from "react";
 
-export function getDimensionName(dimension: Dimension, dimensionNames?: { ou: string }): string {
+export function getDimensionName(dimension: Dimension, dimensionNames?: { ou: string; pe?: string; dx?: string }): string {
     switch (dimension) {
         case "dx":
-            return "Number of beneficiaries served";
+            return dimensionNames?.dx ?? "Number of beneficiaries served";
         case "pe":
-            return "Period";
+            return dimensionNames?.pe ?? "Period";
         case "ou":
             return dimensionNames?.ou ?? "Districts"
     }
@@ -44,7 +44,7 @@ export default function CustomDataTable({configId}: { configId: string; }) {
     const columns = getDimensionValues(head(layout.series) as Dimension, data);
     const rows = getDimensionValues(head(layout.category) as Dimension, data);
 
-    const rowHeader = getRowHeader(layout, {ou: ouDimensionName ?? ""});
+    const rowHeader = getRowHeader(layout, {...(config.dimensionNames ?? {}), ou: ouDimensionName ?? ""});
 
     return (
         <DataTable ref={ref}>
