@@ -15,21 +15,6 @@ import {EngineState} from "./engine";
 import React from "react";
 import {OrganisationUnitLevel} from "@hisptz/dhis2-utils";
 
-const orgUnitQuery = {
-    orgUnits: {
-        resource: "organisationUnits",
-        params: ({level}: any) => {
-            return {
-                level,
-                fields: [
-                    'id',
-                    'level',
-                    'displayName~rename(name)'
-                ]
-            }
-        }
-    }
-}
 const drillDownQuery = {
     orgUnit: {
         resource: "organisationUnits",
@@ -106,6 +91,7 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 orgUnitConfig,
                 data,
                 type,
+                dimensionNames,
                 allowedVisualizationTypes
             } = find(VISUALIZATIONS, ['id', id]) as VisualizationDefaultConfig;
 
@@ -124,7 +110,8 @@ export const VisualizationConfiguration = atomFamily<VisualizationConfig, string
                 orgUnitConfig: orgUnitConfiguration,
                 layout: defaultLayout,
                 visualizationType: defaultVisualizationType,
-                allowedVisualizationTypes
+                allowedVisualizationTypes,
+                dimensionNames
             }
         }
     })
@@ -203,8 +190,6 @@ export const VisualizationData = selectorFamily<{ data: AnalyticsDataInterface[]
                 }
             })
         }));
-
-        console.log(sanitizedData)
 
         return {
             data: sanitizedData,

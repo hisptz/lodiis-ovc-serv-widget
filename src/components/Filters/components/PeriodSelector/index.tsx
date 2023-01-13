@@ -4,6 +4,7 @@ import {useMemo, useState} from "react";
 import {useRecoilState, useResetRecoilState} from "recoil";
 import {PeriodFilterState} from "../../state";
 import {find} from "lodash";
+import {DateTime} from "luxon";
 
 
 const MIN_YEAR = 2020;
@@ -16,9 +17,11 @@ export default function PeriodSelector() {
     const resetPeriod = useResetRecoilState(PeriodFilterState);
     const periods = useMemo(() => PeriodUtility.fromObject({
         year,
-        preference: {allowFuturePeriods: true},
+        preference: {allowFuturePeriods: false},
         category: PeriodTypeCategory.FIXED
-    }).getPeriodType(PeriodTypeEnum.SIXMONTHLY)?.periods, [year]);
+    }).getPeriodType(PeriodTypeEnum.SIXMONTHLY)?.periods.filter(period => {
+        return period.end.diffNow('days').days < 0 || period.interval.contains(DateTime.now())
+    }), [year]);
 
     return (
         <div className="row gap-16 w-100">

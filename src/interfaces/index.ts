@@ -59,7 +59,12 @@ export interface VisualizationDefaultConfig {
         filter?: (data: OvcServData[]) => OvcServData[];
         dx?: string
     }[],
-    orgUnitConfig: OrgUnitConfig
+    orgUnitConfig: OrgUnitConfig;
+    dimensionNames?: {
+        ou?: string;
+        pe?: string;
+        dx?: string;
+    }
 }
 
 export interface VisualizationConfig {
@@ -73,5 +78,10 @@ export interface VisualizationConfig {
     data: {
         title: string;
         filter?: (data: OvcServData[]) => OvcServData[]
-    }[]
+    }[],
+    dimensionNames?: {
+        ou?: string;
+        pe?: string;
+        dx?: string;
+    }
 }
