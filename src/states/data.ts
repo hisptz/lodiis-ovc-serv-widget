@@ -1,55 +1,73 @@
 import {selector, selectorFamily} from "recoil";
 import {Dimension, OvcServData} from "../interfaces";
-import {PROGRAM, SERVICE_PROVISION_PROGRAM_STAGE} from "../constants";
+import {ATTRIBUTES, PROGRAM, SERVICE_PROVISION_DATA_ELEMENTS, SERVICE_PROVISION_PROGRAM_STAGE} from "../constants";
 import {PeriodFilterState} from "../components/Filters/state";
 import {EngineState} from "./engine";
-import {Analytics, BasePeriod, Event} from "@hisptz/dhis2-utils";
-import {getFilteredEnrollments, transformEvents} from "../utils/data";
+import {Analytics, AnalyticsHeader, BasePeriod} from "@hisptz/dhis2-utils";
 import {flatten, fromPairs} from "lodash";
 import {asyncify, mapLimit} from "async";
+import {getFilteredEnrollments, transformEvents} from "../utils/data";
 
+const signal = new AbortSignal();
 
 const dataQuery = {
     events: {
-        resource: "events",
-        params: ({startDate, endDate, page}: any) => ({
+        resource: "analytics/events/query",
+        id: PROGRAM,
+        params: ({startDate, endDate, page, skipData, skipMeta}: any) => ({
             program: PROGRAM,
+            skipData,
+            skipMeta,
             startDate,
             endDate,
             ouMode: `ACCESSIBLE`,
-            programStage: SERVICE_PROVISION_PROGRAM_STAGE,
+            stage: SERVICE_PROVISION_PROGRAM_STAGE,
             totalPages: true,
+            hierarchyMeta: true,
+            dimension: [
+                ...SERVICE_PROVISION_DATA_ELEMENTS,
+                ...Object.values(ATTRIBUTES).map((value: any) => value.attribute ?? value),
+            ],
             page,
-            pageSize: 100,
-            fields: [
-                `event`,
-                `enrollment`,
-                `eventDate`,
-                `dataValues[dataElement,value]`,
-                `trackedEntityInstance`,
-                `orgUnit`,
-                `programStage`
+            pageSize: 1000,
+            columns: [
+                "enrollment"
             ]
         })
     }
 }
 
-
 async function getOVCSERVData(engine: any, {period}: { period?: BasePeriod }) {
 
     if (!period) return;
 
-    async function getPagination(): Promise<any> {
+    async function getMetadata(): Promise<any> {
         const data = await engine.query(dataQuery, {
             variables: {
                 startDate: period?.start?.toFormat('yyyy-MM-dd'),
-                endDate: period?.end?.toFormat('yyyy-MM-dd')
+                endDate: period?.end?.toFormat('yyyy-MM-dd'),
+                skipData: true,
+                skipMeta: false
             },
         });
-        return data?.events as any;
+        return {
+            metaData: data?.events?.metaData,
+            headers: data?.events?.headers
+        } as any;
     }
 
-    async function getData(page: number): Promise<OvcServData[] | undefined> {
+    function getEventsPayload(eventRows: string[][], headers: AnalyticsHeader[]) {
+        return eventRows.map((row) => {
+            return {
+                ...fromPairs([...row.map((value, index) => ([headers[index].name, value]))])
+            }
+        })
+    }
+
+    async function getData(page: number, metaData: {
+        headers: AnalyticsHeader[],
+        metaData: Record<string, any>
+    }): Promise<OvcServData[] | undefined> {
         if (!period) {
             return;
         }
@@ -57,11 +75,15 @@ async function getOVCSERVData(engine: any, {period}: { period?: BasePeriod }) {
             variables: {
                 startDate: period?.start?.toFormat('yyyy-MM-dd'),
                 endDate: period?.end?.toFormat('yyyy-MM-dd'),
-                page
+                page,
+                skipData: false,
+                skipMeta: true
             }
         });
-        const pageEvents = data?.events as any;
-        const events = pageEvents?.events as Event[];
+
+        const eventRows = data?.events?.rows as any;
+        const events = getEventsPayload(eventRows, metaData.headers);
+
         return await transformEvents(await getFilteredEnrollments(events, {
             engine,
             period
@@ -72,16 +94,10 @@ async function getOVCSERVData(engine: any, {period}: { period?: BasePeriod }) {
         if (!period) {
             return;
         }
-        const {pager: {pageCount}, events} = await getPagination() ?? {};
+        const meta = await getMetadata() ?? {};
+        const {pageCount} = meta?.metaData?.pager ?? {};
         if (!pageCount) return;
-        if (pageCount === 1) {
-            const firstPageData = events as any;
-            return await transformEvents(await getFilteredEnrollments(firstPageData, {
-                engine,
-                period
-            }), engine);
-        }
-        return flatten(await mapLimit(Array.from(Array(pageCount).keys()), 1, asyncify(async (index: number) => getData(index + 1).then((data) => {
+        return flatten(await mapLimit(Array.from(Array(pageCount).keys()), 1, asyncify(async (index: number) => getData(index + 1, meta).then((data) => {
             return data;
         }))));
     }
@@ -97,7 +113,6 @@ export const OVCServData = selector<OvcServData[] | undefined>({
         return getOVCSERVData(engine, {period})
     }
 });
-
 
 const analyticsQuery = {
     analytics: {
@@ -129,7 +144,6 @@ async function getAnalyticsData(engine, {
 
     return response?.analytics;
 }
-
 
 function getDataFromAnalytics(analytics: Analytics): Record<string, any>[] {
     const {rows, headers} = analytics;

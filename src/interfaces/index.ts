@@ -1,4 +1,4 @@
-import {BasePeriod, Enrollment, Event, OrganisationUnit} from "@hisptz/dhis2-utils";
+import {BasePeriod, Event, OrganisationUnit} from "@hisptz/dhis2-utils";
 
 export interface AnalyticsData {
     dx: string;
@@ -12,7 +12,6 @@ export interface AnalyticsData {
 }
 
 export interface OvcServData {
-    enrollment: Enrollment,
     orgUnit: {
         id: string;
         path: string;

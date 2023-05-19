@@ -19,6 +19,8 @@ export const VULNERABILITY_CRITERIA = [
 ]
 
 
+
+
 export const ATTRIBUTES: Record<string, string | { attribute: string; getter: (value?: string) => any }> = {
     sex: "vIX4GTSCX4P",
     active: "PN92g65TkVI",
