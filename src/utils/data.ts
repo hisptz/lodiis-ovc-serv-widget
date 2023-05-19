@@ -1,7 +1,7 @@
-import {BasePeriod, Enrollment, Event, TrackedEntityInstance} from "@hisptz/dhis2-utils"
+import {BasePeriod, Event} from "@hisptz/dhis2-utils"
 import {OvcServData} from "../interfaces";
-import {chunk, find, flatten, fromPairs, groupBy, head, isEmpty, remove, uniq, uniqBy} from "lodash";
-import {ATTRIBUTES, PROGRAM, SERVICE_PROVISION_DATA_ELEMENTS} from "../constants";
+import {chunk, find, flatten, fromPairs, groupBy, head, isEmpty, remove, uniqBy} from "lodash";
+import {ATTRIBUTES, SERVICE_PROVISION_DATA_ELEMENTS} from "../constants";
 import {DateTime, Duration} from "luxon";
 import {asyncify, map} from "async";
 
@@ -17,17 +17,18 @@ interface EnrollmentData {
     events: Event[]
 }
 
-function eventHasAtLeastOneService(event: Event): boolean {
-    const serviceValues = SERVICE_PROVISION_DATA_ELEMENTS.map((service) => event?.dataValues?.find((dataValue) => dataValue.dataElement === service)?.value === 'true' ?? false);
-    return serviceValues.reduce((acc, value) => acc || value, false)
+function eventHasAtLeastOneService(event: Record<string, any>): boolean {
+    const serviceValues = SERVICE_PROVISION_DATA_ELEMENTS.map((service) => {
+        return Boolean(event[service]);
+    });
+    return serviceValues.some((value) => value);
 }
 
 export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {period}: FilterOptions): boolean {
     const [firstQuarter] = period.interval.splitBy(Duration.fromObject({months: 3}));
-
     const lastQuarterEvents = [...events];
     const firstQuarterEvents = remove(lastQuarterEvents, (event) => {
-        const date = DateTime.fromISO(event.eventDate);
+        const date = DateTime.fromISO(event.eventdate);
         return firstQuarter.contains(date);
     })
     return !isEmpty(firstQuarterEvents) && !isEmpty(lastQuarterEvents)
@@ -56,16 +57,14 @@ async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: Enrollmen
         return [];
     }
     const [, lastQuarter] = options.period.interval.splitBy(Duration.fromObject({months: 3}));
-    const enrollmentsWithEnrollmentDate = (await options.engine.query(enrollmentQuery, {
-        variables: {
-            ids: enrollmentIds
-        }
-    }))?.enrollment?.enrollments;
+
+
     return enrollments.filter((enrollmentData) => {
-        const enrollmentDate = find(enrollmentsWithEnrollmentDate, ['enrollment', enrollmentData.enrollment])?.enrollmentDate;
+        const enrollmentDate = head(enrollmentData.events)?.enrollmentdate;
         if (enrollmentDate) {
             try {
-                const enrollmentDateTime = DateTime.fromISO(enrollmentDate);
+
+                const enrollmentDateTime = DateTime.fromJSDate(new Date(enrollmentDate));
                 return lastQuarter.contains(enrollmentDateTime);
             } catch (e) {
                 console.error("Yep! try again", e);
@@ -75,9 +74,10 @@ async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: Enrollmen
     })
 }
 
-export async function getFilteredEnrollments(events: Event[], options: FilterOptions,): Promise<EnrollmentData[]> {
+export async function getFilteredEnrollments(events: Record<string, any>, options: FilterOptions,): Promise<EnrollmentData[]> {
     const eventsWithServices = events?.filter(eventHasAtLeastOneService);
-    const groupedEvents = groupBy(eventsWithServices, 'enrollment');
+
+    const groupedEvents = groupBy(eventsWithServices, 'pi');
     const enrollments: EnrollmentData[] = Object.keys(groupedEvents).map((key) => {
         return {
             enrollment: key,
@@ -87,35 +87,23 @@ export async function getFilteredEnrollments(events: Event[], options: FilterOpt
 
     //This removes all enrollments that satisfy first condition from the enrollments array. The remaining have to be filtered for the second condition;
     const enrollmentsWithEventsOnBothQuarters = remove(enrollments, (enrollment) => enrollmentHasEventsOnBothQuarters(enrollment, options));
+
     const enrollmentsWithRegistrationOnLastQuarter = await getEnrollmentWithRegistrationOnLastQuarter(enrollments, options);
     return uniqBy([...enrollmentsWithEventsOnBothQuarters, ...enrollmentsWithRegistrationOnLastQuarter], 'enrollment')
 }
 
-const teiQuery = {
-    tei: {
-        resource: "trackedEntityInstances",
-        params: ({ids}: any) => {
-            return {
-                trackedEntityInstance: ids.join(';'),
-                fields: [
-                    'trackedEntityInstance',
-                    'attributes[attribute,value]',
-                    'enrollments[enrollment,enrollmentDate,orgUnit]'
-                ],
-                program: PROGRAM,
-                ouMode: 'ACCESSIBLE'
-            }
-        }
-    },
+const orgUnitsQuery = {
     ou: {
         resource: "organisationUnits",
         params: ({ous}: any) => {
             return {
                 fields: [
                     'id',
-                    'path'
+                    'path',
+                    'code',
+                    'name'
                 ],
-                filter: `id:in:[${ous.join(',')}]`
+                filter: `name:in:[${ous.join(',')}]`
             }
         }
 
@@ -123,24 +111,25 @@ const teiQuery = {
 }
 
 
-function getOvcData(enrollmentData: EnrollmentData, teiData: TrackedEntityInstance, orgUnit: { id: string; path: string }): OvcServData {
-    const enrollment = head(teiData?.enrollments) ?? {} as Enrollment;
+function getOvcData(enrollmentData: EnrollmentData, orgUnit: {
+    id: string;
+    path: string
+}): OvcServData {
+
     const events = enrollmentData.events;
-    const attributesData = teiData?.attributes;
     const pairs = Object.keys(ATTRIBUTES).map((attribute) => {
         const config = ATTRIBUTES[attribute];
 
         if (typeof config === "string") {
-            return [attribute, find(attributesData, ['attribute', ATTRIBUTES[attribute]])?.value];
+            return [attribute, head(events)?.[config]];
         }
-        const attributeValue = find(attributesData, ['attribute', config?.attribute])?.value;
+        const attributeValue = head(events)?.[config.attribute]
         const value = config.getter(attributeValue)
         return [attribute, value]
 
     })
     const attributes = fromPairs(pairs);
     return {
-        enrollment,
         events,
         attributes,
         orgUnit
@@ -149,22 +138,16 @@ function getOvcData(enrollmentData: EnrollmentData, teiData: TrackedEntityInstan
 
 export async function transformEvents(enrollments: EnrollmentData[], engine: any): Promise<OvcServData[]> {
     return flatten(await map(chunk(enrollments, 20), asyncify(async (enrollmentBatch: EnrollmentData[]) => {
-        const teiAndOrgUnitIds = enrollmentBatch.map((enrollment) => ({
-            tei: head(enrollment.events)?.trackedEntityInstance,
-            ou: head(enrollment.events)?.orgUnit
-        }));
-        const teiData = await engine.query(teiQuery, {
+        const ouNames = enrollmentBatch.map((enrollment) => head(enrollment.events)?.ouname);
+        const ouData = await engine.query(orgUnitsQuery, {
             variables: {
-                ous: uniq(teiAndOrgUnitIds.map(({ou}) => ou)),
-                ids: teiAndOrgUnitIds.map(({tei}) => tei)
+                ous: ouNames
             }
         })
-        const data = teiData?.tei?.trackedEntityInstances;
-        const orgUnits = teiData?.ou?.organisationUnits;
+        const orgUnits = ouData?.ou?.organisationUnits;
         return enrollmentBatch.map((enrollment) => {
-            const tei = find(data, (tei) => head(tei?.enrollments as Enrollment[])?.enrollment === enrollment.enrollment);
-            const orgUnit = find(orgUnits, (ou) => ou.id === head(enrollment.events)?.orgUnit)
-            return getOvcData(enrollment, tei, orgUnit);
+            const orgUnit = find(orgUnits, (ou) => ou.name === head(enrollment.events)?.ouname);
+            return getOvcData(enrollment, orgUnit);
         })
     })))
 }
