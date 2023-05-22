@@ -1,7 +1,7 @@
 {
   "name": "kb-ovc-serv-widget",
   "private": true,
-  "version": "1.0.0-alpha.05",
+  "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
     "proxy": "node proxy.cjs",
