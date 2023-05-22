@@ -34,22 +34,6 @@ export function enrollmentHasEventsOnBothQuarters({events}: EnrollmentData, {per
     return !isEmpty(firstQuarterEvents) && !isEmpty(lastQuarterEvents)
 }
 
-const enrollmentQuery = {
-    enrollment: {
-        resource: "enrollments",
-        params: ({ids}: any) => {
-            return {
-                fields: [
-                    'enrollmentDate',
-                    'enrollment',
-                ],
-                ouMode: "ACCESSIBLE",
-                enrollment: `${ids.join(';')}`
-            }
-        }
-    }
-}
-
 
 async function getEnrollmentWithRegistrationOnLastQuarter(enrollments: EnrollmentData[], options: FilterOptions) {
     const enrollmentIds = enrollments.map(({enrollment}) => enrollment)
@@ -123,7 +107,10 @@ function getOvcData(enrollmentData: EnrollmentData, orgUnit: {
         if (typeof config === "string") {
             return [attribute, head(events)?.[config]];
         }
+
+
         const attributeValue = head(events)?.[config.attribute]
+
         const value = config.getter(attributeValue)
         return [attribute, value]
 

@@ -28,7 +28,8 @@ export const ATTRIBUTES: Record<string, string | { attribute: string; getter: (v
         attribute: "qZP982qpSPS",
         getter: (value?: string) => {
             if (value) {
-                const dateOfBirth = DateTime.fromISO(value);
+                console.log(value)
+                const dateOfBirth = DateTime.fromJSDate(new Date(value));
                 return dateOfBirth.diffNow().negate().shiftTo("years").years;
             }
         }

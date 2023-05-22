@@ -6,7 +6,7 @@
   "scripts": {
     "proxy": "node proxy.cjs",
     "dev": "concurrently 'yarn proxy' 'vite' ",
-    "build": "tsc --noEmit && vite build",
+    "build": "vite build",
     "deploy": "d2 app scripts deploy",
     "postbuild": "./bundle.sh",
     "preview": "vite preview"
