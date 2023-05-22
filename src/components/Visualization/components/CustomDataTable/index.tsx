@@ -28,11 +28,11 @@ function getRowHeader(layout: VisualizationLayout, dimensionNames?: { ou: string
 export function getDimensionValues(dimension: Dimension, data: AnalyticsData[]): { id: string, name: string; level?: number }[] {
     switch (dimension) {
         case "pe":
-            return uniqBy(data.map(({pe}) => ({id: pe.id, name: pe.name})), 'id');
+            return uniqBy(data?.map(({pe}) => ({id: pe.id, name: pe.name})), 'id');
         case "dx":
-            return uniqBy(data.map(({dx}) => ({id: dx, name: dx})), 'id')
+            return uniqBy(data?.map(({dx}) => ({id: dx, name: dx})), 'id')
         case "ou":
-            return uniqBy(data.map(({ou}) => ou), 'id')
+            return uniqBy(data?.map(({ou}) => ou), 'id')
     }
 }
 

@@ -6,6 +6,8 @@ import {useDataEngine} from "@dhis2/app-runtime";
 import {EngineState} from "./states/engine";
 import HighChartsExport from "highcharts/modules/exporting";
 import HighCharts from "highcharts";
+import {DATA_STORE_NAMESPACE} from "./constants";
+import {OVCDataProvider} from "./components/OVCDataProvider";
 
 HighChartsExport(HighCharts);
 
@@ -16,9 +18,11 @@ function App() {
         snapshot.set(EngineState, engine);
     }
 
-    return <DataStoreProvider namespace='kb-ovc-serv-widget' loadingComponent={<Loader/>}>
+    return <DataStoreProvider namespace={DATA_STORE_NAMESPACE} loadingComponent={<Loader/>}>
         <RecoilRoot initializeState={initState}>
-            <MainContainer/>
+            <OVCDataProvider>
+                <MainContainer/>
+            </OVCDataProvider>
         </RecoilRoot>
     </DataStoreProvider>;
 }

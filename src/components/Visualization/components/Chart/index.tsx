@@ -149,9 +149,12 @@ function ChartComponent({configId}: { configId: string }) {
     const {options} = useChartOptions(configId);
     const chartComponentRef = useSetRecoilState(VisualizationRef(configId))
 
+    console.log({
+        options
+    })
+
     return (
         <HighchartsReact
-            immutable
             containerProps={{
                 id: `${configId}-${orgUnit?.id}`,
                 style: {

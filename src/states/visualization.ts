@@ -151,9 +151,11 @@ export const VisualizationData = selectorFamily<{ data: AnalyticsDataInterface[]
     get: ({configId}: { configId: string, }) => ({get}) => {
         const {data, type, layout} = get(VisualizationConfiguration(configId))
         const period = get(PeriodFilterState);
-        const ovcServData = get(OVCServData);
+        const ovcServData = get(OVCServData(period?.id));
+
         const ou = get(OrgUnitState);
         const orgUnitLevel = get(OrgUnitLevel(head(ou)?.level?.toString()));
+
 
         if (!period) return [];
 
@@ -177,6 +179,7 @@ export const VisualizationData = selectorFamily<{ data: AnalyticsDataInterface[]
             }
         }
         if (!ovcServData) return [];
+
 
         const sanitizedData = flatten(data.map(datum => {
             const filteredData = datum.filter ? datum.filter(ovcServData) : ovcServData;

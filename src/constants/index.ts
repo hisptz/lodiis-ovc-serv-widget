@@ -1,6 +1,8 @@
 import {DateTime} from "luxon";
 import {VisualizationDefaultConfig} from "../interfaces";
 
+
+export const DATA_STORE_NAMESPACE = "kb-ovc-serv-widget"
 export const PROGRAM = "em38qztTI8s";
 export const SERVICE_PROVISION_PROGRAM_STAGE = "CHFwighOquA";
 export const DISTRICT_LEVEL = "2";
@@ -17,8 +19,6 @@ export const VULNERABILITY_CRITERIA = [
     'Child of PLHIV',
     'Child living with HIV'
 ]
-
-
 
 
 export const ATTRIBUTES: Record<string, string | { attribute: string; getter: (value?: string) => any }> = {

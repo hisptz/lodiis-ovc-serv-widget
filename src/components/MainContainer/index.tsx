@@ -1,6 +1,5 @@
 import classes from "./MainContainer.module.css"
 import Filters from "../Filters";
-import {useData} from "../../hooks";
 import Loader from "../Loader";
 import {VISUALIZATIONS} from "../../constants";
 import {lazy, Suspense} from "react";
@@ -12,19 +11,7 @@ import ErrorFallback from "../Error";
 const VisualizationContainer = lazy(() => import("../Visualization"));
 
 export function Visualizations() {
-    const {loading, error} = useData();
     const period = useRecoilValue(PeriodFilterState)
-
-
-    if (loading) {
-        return (
-            <Loader text={`Loading data, please wait...`}/>
-        )
-    }
-
-    if (error) {
-        throw Error(error?.message)
-    }
 
     if (!period) {
         return (
