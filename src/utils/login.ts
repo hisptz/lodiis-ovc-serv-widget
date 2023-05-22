@@ -1,7 +1,7 @@
 const request = (url: string, options: Record<string, any>) => {
     const abortController = new AbortController();
 
-    const promise = new Promise((resolve, reject) => {
+    const promise: any = new Promise((resolve, reject) => {
         fetch(url, {
             ...options,
             credentials: "include",
@@ -42,6 +42,7 @@ export const post = (url: string, body: string) =>
             "Content-Type": "application/x-www-form-urlencoded",
         },
     });
+
 export async function login(baseUrl: string, {username, password}: { username: string, password: string }) {
     window.localStorage.DHIS2_BASE_URL = baseUrl;
     try {
@@ -49,4 +50,14 @@ export async function login(baseUrl: string, {username, password}: { username: s
     } catch (e) {
         console.error(`Could not login`);
     }
+}
+
+const query = {
+    me: {
+        resource: "me",
+    }
+}
+
+export async function checkAuth(baseUrl: string) {
+    return get(`${baseUrl}/api/me`).then(() => true).catch(() => false)
 }

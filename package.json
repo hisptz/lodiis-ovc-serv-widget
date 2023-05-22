@@ -2,11 +2,12 @@
   "name": "kb-ovc-serv-widget",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "proxy": "node proxy.cjs",
     "dev": "concurrently 'yarn proxy' 'vite' ",
-    "build": "tsc && vite build",
+    "build": "tsc --noEmit && vite build",
+    "deploy": "d2 app scripts deploy",
     "postbuild": "./bundle.sh",
     "preview": "vite preview"
   },
@@ -30,13 +31,29 @@
     }
   },
   "dependencies": {
-    "@dhis2/app-runtime": "^3.7.0",
+    "@dhis2/app-runtime": "^3.9.3",
+    "@dhis2/app-service-datastore": "^1.0.0-beta.3",
     "@dhis2/ui": "^8.7.0",
+    "@hisptz/dhis2-utils": "^1.0.0-alpha.4",
+    "@koale/useworker": "^4.0.2",
+    "async-es": "^3.2.4",
+    "highcharts": "^10.3.2",
+    "highcharts-react-official": "^3.1.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^3.1.4",
+    "recoil": "^0.7.7",
+    "recoil-sync": "^0.2.0",
+    "usehooks-ts": "^2.9.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@dhis2/cli-app-scripts": "^10.1.5",
+    "@dhis2/cli-app-scripts": "^10.2.0",
+    "@types/async": "^3.2.15",
+    "@types/lodash": "^4.14.190",
+    "@types/luxon": "^3.1.0",
     "@types/react": "^18.0.24",
     "@types/react-dom": "^18.0.8",
     "@vitejs/plugin-react": "^2.2.0",

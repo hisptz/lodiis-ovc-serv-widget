@@ -1,40 +1,30 @@
-import {useDataQuery} from "@dhis2/app-runtime";
-import {CenteredContent, CircularLoader} from "@dhis2/ui";
+import MainContainer from "./components/MainContainer";
+import {DataStoreProvider} from "@dhis2/app-service-datastore"
+import Loader from "./components/Loader";
+import {MutableSnapshot, RecoilRoot} from "recoil";
+import {useDataEngine} from "@dhis2/app-runtime";
+import {EngineState} from "./states/engine";
+import HighChartsExport from "highcharts/modules/exporting";
+import HighCharts from "highcharts";
+import {DATA_STORE_NAMESPACE} from "./constants";
+import {OVCDataProvider} from "./components/OVCDataProvider";
 
-const query = {
-    me: {
-        resource: "me",
-    }
-}
+HighChartsExport(HighCharts);
+
 
 function App() {
-    const {loading, data, error} = useDataQuery(query);
-
-    if (loading) {
-        return (
-            <CenteredContent>
-                <CircularLoader/>
-            </CenteredContent>
-        )
+    const engine = useDataEngine();
+    const initState = (snapshot: MutableSnapshot) => {
+        snapshot.set(EngineState, engine);
     }
 
-    if (error) {
-        return (
-            <CenteredContent>
-                <h1>{error.message}</h1>
-            </CenteredContent>
-        )
-    }
-
-    if (data) {
-        return (
-            <CenteredContent>
-                <h1>Hello, {(data?.me as any)?.displayName}</h1>
-            </CenteredContent>
-        )
-    }
-
-    return null;
+    return <DataStoreProvider namespace={DATA_STORE_NAMESPACE} loadingComponent={<Loader/>}>
+        <RecoilRoot initializeState={initState}>
+            <OVCDataProvider>
+                <MainContainer/>
+            </OVCDataProvider>
+        </RecoilRoot>
+    </DataStoreProvider>;
 }
 
 export default App

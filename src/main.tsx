@@ -1,13 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import './index.css'
+import './styles/index.css'
+import './styles/common.css'
 import {Provider,} from "@dhis2/app-runtime";
-import {login} from "./utils/login";
-    import {CssReset} from "@dhis2/ui";
+import {checkAuth, login} from "./utils/login";
+import {CssReset} from "@dhis2/ui";
+import {ErrorBoundary} from "react-error-boundary";
+import ErrorFallback from "./components/Error"
 
 const root = document.getElementById('root') as HTMLElement;
-
 
 const getServerVersion = async (baseUrl: string, authorization?: string) => {
     const appVersion = await fetch(`${baseUrl}/api/system/info.json`, {
@@ -28,29 +30,42 @@ const getServerVersion = async (baseUrl: string, authorization?: string) => {
     }
 }
 
+function renderError(error: any) {
+    return ReactDOM.createRoot(root).render(<code>{error.toString()}</code>)
+}
+
 const renderProductionApp = async () => {
     const render = (baseUrl: string, apiVersion: number, serverVersion: { full: string, major: number, minor: number, patch: number }) =>
         ReactDOM.createRoot(root).render(
-            <Provider
-                config={{
-                    baseUrl,
-                    apiVersion,
-                    serverVersion
-                }}
-            >
+            <>
                 <CssReset/>
-                <App/>
-            </Provider>,
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                    <Provider
+                        config={{
+                            baseUrl,
+                            apiVersion,
+                            serverVersion
+                        }}
+                    >
+                        <App/>
+                    </Provider>
+                </ErrorBoundary>
+            </>,
         )
     try {
-
-        const manifest = await (await fetch('./manifest.webapp')).json()
-        const serverVersion = await getServerVersion(manifest.baseUrl);
-
-        render(manifest.activities.dhis.href, serverVersion.minor, serverVersion)
+        fetch('./manifest.webapp').then((response) => response.json()).then((manifest) => {
+            const baseUrl = manifest?.activities?.dhis?.href ?? "";
+            getServerVersion(baseUrl).then((serverVersion) => {
+                render(baseUrl, serverVersion.minor, serverVersion);
+            }).catch((error) => {
+                renderError(error);
+            });
+        }).catch((error) => {
+            renderError(error);
+        });
     } catch (error) {
         console.error('Could not read manifest:', error)
-        ReactDOM.createRoot(root).render(<code>No manifest found</code>)
+
     }
 }
 
@@ -68,24 +83,27 @@ const renderDevApp = async () => {
         apiVersion: serverVersion.minor
     }
 
-    await login(baseUrl, {username, password})
+    const isAuthenticated = await checkAuth(baseUrl);
+
+    if (!isAuthenticated) {
+        await login(baseUrl, {username, password})
+    }
 
     ReactDOM.createRoot(root).render(
         <React.StrictMode>
             <CssReset/>
-            <Provider config={config}>
-                <App/>
-            </Provider>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Provider config={config}>
+                    <App/>
+                </Provider>
+            </ErrorBoundary>
         </React.StrictMode>
     )
 }
-
 
 if (import.meta.env.PROD) {
     renderProductionApp();
 } else {
     renderDevApp()
 }
-
-
 
