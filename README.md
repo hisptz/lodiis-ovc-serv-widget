@@ -1,4 +1,4 @@
-# KB OVC SERVE WIDGET
+# LODIIS OVC SERVE WIDGET
 
 ## Contents
 
@@ -24,7 +24,7 @@ react 17.0.2
 
 ## <a name='setup'></a>3. Project setup
 
-To get started with this project , follow the following procedure.
+To get started with this project, follow the following procedure.
 
 <ol>
 <li>Package installations</li>
@@ -33,7 +33,7 @@ To get started with this project , follow the following procedure.
 
 ### Package installations
 
-With the use of <b>yarn</b>, this app packages are maintained with only one _***package.json***_. <br>
+With the use of <b>yarn</b>, these app packages are maintained with only one _***package.json***_. <br>
 To get started with package installations, Use the command:
 
 ```
@@ -48,7 +48,7 @@ yarn add
 
 ### Proxy configuration
 
-In order to start the development server for the KB OVC SERVE widget, there has to be a set proxy to the server hosting the DHIS2 instance.
+In order to start the development server for the LODIIS OVC SERVE widget, there has to be a set proxy to the server hosting the DHIS2 instance.
 
 The proxy can be configured by adding the `.env` file at the root directory with content as on the`.env.example` or as shown below
 
